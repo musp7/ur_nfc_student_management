@@ -10,12 +10,41 @@
 <body>
     <h1>Finance Dashboard</h1>
     <p>Welcome, {{ user.username }}!</p>
-    <ul>
-        <li><a href="/finance/update-status/">Update Payment Status</a></li>
-        <li> <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-        </form></li>
-    </ul>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Payment Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+                <tr>
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.first_name }} {{ student.last_name }}</td>
+                    <td>{{ student.payment_status }}</td>
+                    <td>
+                        <a href="{% url 'finance-student-detail' student.id %}">View Details</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">No students found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <li> <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
 </body>
 </html>
+
+
+
+
+
+
+

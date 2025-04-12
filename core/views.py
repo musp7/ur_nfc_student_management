@@ -12,6 +12,7 @@ from .nfc_utils import scan_nfc_card
 from accounts.models import CustomUser
 import pandas as pd
 from .models import College, School, Department, Class
+from .forms import PaymentStatusForm
 
 @login_required
 @role_required(['admin', 'gatekeeper', 'registrar'])  # Allow these roles
@@ -318,3 +319,30 @@ def scan_card(request):
         student.attendance_records = None  # Hide attendance records (if applicable)
 
     return render(request, 'core/scan_card.html', {'student': student, 'error': error})
+
+@login_required
+@role_required(['finance'])
+def finance_dashboard(request):
+    """
+    Finance dashboard view.
+    """
+    students = Student.objects.all()  # Fetch all registered students
+    return render(request, 'core/finance_dashboard.html', {'students': students})
+
+@login_required
+@role_required(['finance'])
+def finance_student_detail(request, student_id):
+    """
+    View for finance staff to view and update a student's payment status.
+    """
+    student = get_object_or_404(Student, id=student_id)
+
+    if request.method == 'POST':
+        form = PaymentStatusForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return redirect('finance-dashboard')
+    else:
+        form = PaymentStatusForm(instance=student)
+
+    return render(request, 'core/finance_student_detail.html', {'student': student, 'form': form})

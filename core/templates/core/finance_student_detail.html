@@ -1,0 +1,30 @@
+<!-- filepath: core/templates/core/finance_student_detail.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details</title>
+</head>
+<body>
+    <h1>Student Details</h1>
+    <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+    <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+    <p><strong>Gender:</strong> {{ student.gender }}</p>
+    <p><strong>Class:</strong> {{ student.student_class }}</p>
+    <p><strong>Department:</strong> {{ student.department }}</p>
+    <p><strong>School:</strong> {{ student.school }}</p>
+    <p><strong>College:</strong> {{ student.college }}</p>
+    <p><strong>Campus:</strong> {{ student.campus }}</p>
+
+    <h2>Update Payment Status</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Update Payment Status</button>
+    </form>
+
+    <a href="{% url 'finance-dashboard' %}">Back to Dashboard</a>
+</body>
+</html>

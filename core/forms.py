@@ -70,4 +70,9 @@ class AttendanceFilterForm(forms.Form):
 class AttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
-        fields = ['student', 'attendance_type']    
+        fields = ['student', 'attendance_type'] 
+
+class PaymentStatusForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['payment_status']   

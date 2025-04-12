@@ -19,4 +19,6 @@ urlpatterns = [
     path('ajax/load-departments/', views.load_departments, name='ajax_load_departments'),
     path('ajax/load-classes/', views.load_classes, name='ajax_load_classes'),
     path('gatekeeper/scan-card/', views.scan_card, name='scan-card'),
+    path('finance/dashboard/', views.finance_dashboard, name='finance-dashboard'),
+    path('finance/student/<int:student_id>/', views.finance_student_detail, name='finance-student-detail'),
 ]
