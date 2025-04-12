@@ -1,0 +1,34 @@
+<!-- filepath: core/templates/core/base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NFC Student Management{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <ul>
+            {% if user.is_authenticated %}
+                <li>Welcome, {{ user.username }} ({{ user.role }})</li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% if user.role == 'gatekeeper' %}
+                    <li><a href="/students/">Gatekeeper Dashboard</a></li>
+                {% elif user.role == 'teacher' %}
+                    <li><a href="/teacher/">Teacher Dashboard</a></li>
+                {% elif user.role == 'registrar' %}
+                    <li><a href="/registrar/">Registrar Dashboard</a></li>
+                {% elif user.role == 'finance' %}
+                    <li><a href="/finance/">Finance Dashboard</a></li>
+                {% endif %}
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

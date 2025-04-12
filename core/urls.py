@@ -1,0 +1,14 @@
+# filepath: core/urls.py
+
+from django.urls import path
+from . import views
+
+
+
+urlpatterns = [
+    path('profile/<str:student_id>/', views.student_profile, name='student-profile'),
+    path('gatekeeper/dashboard/', views.gatekeeper_dashboard, name='gatekeeper-dashboard'),
+    path('teacher/dashboard/', views.teacher_dashboard, name='teacher-dashboard'),
+    path('registrar/dashboard/', views.registrar_dashboard, name='registrar-dashboard'),
+    path('finance/dashboard/', views.finance_dashboard, name='finance-dashboard'),
+]

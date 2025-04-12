@@ -1,0 +1,13 @@
+asgiref==3.8.1
+Django==5.2
+django-crispy-forms==2.3
+django-environ==0.12.0
+djangorestframework==3.16.0
+libusb1==3.3.1
+ndeflib==0.3.3
+nfcpy==1.0.4
+pillow==11.1.0
+pyDes==2.0.1
+pyserial==3.5
+sqlparse==0.5.3
+typing_extensions==4.13.2

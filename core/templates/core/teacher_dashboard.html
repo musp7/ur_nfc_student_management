@@ -1,0 +1,21 @@
+<!-- filepath: core/templates/core/teacher_dashboard.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+</head>
+<body>
+    <h1>Teacher Dashboard</h1>
+    <p>Welcome, {{ user.username }}!</p>
+    <ul>
+        <li><a href="/teacher/attendance/">Take Attendance</a></li>
+        <li> <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form></li>
+    </ul>
+</body>
+</html>

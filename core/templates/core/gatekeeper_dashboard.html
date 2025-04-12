@@ -1,0 +1,23 @@
+<!-- filepath: core/templates/core/gatekeeper_dashboard.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gatekeeper Dashboard</title>
+</head>
+<body>
+    <h1>Gatekeeper Dashboard</h1>
+    <p>Welcome, {{ user.username }}!</p>
+    <ul>
+        <li><a href="/students/">Scan NFC Card</a></li>
+        <li>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </li>
+    </ul>
+</body>
+</html>
