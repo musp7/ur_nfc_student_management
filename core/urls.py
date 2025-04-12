@@ -18,4 +18,5 @@ urlpatterns = [
     path('ajax/load-schools/', views.load_schools, name='ajax_load_schools'),
     path('ajax/load-departments/', views.load_departments, name='ajax_load_departments'),
     path('ajax/load-classes/', views.load_classes, name='ajax_load_classes'),
+    path('gatekeeper/scan-card/', views.scan_card, name='scan-card'),
 ]

@@ -11,7 +11,7 @@
     <h1>Gatekeeper Dashboard</h1>
     <p>Welcome, {{ user.username }}!</p>
     <ul>
-        <li><a href="/students/">Scan NFC Card</a></li>
+        <li><a href="{% url 'scan-card' %}">Scan NFC Card</a></li>
         <li>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}

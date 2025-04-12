@@ -33,10 +33,12 @@ def landing_page(request):
 
 
 @login_required
-@role_required('gatekeeper')
+@role_required(['gatekeeper'])
 def gatekeeper_dashboard(request):
+    """
+    Gatekeeper dashboard view.
+    """
     return render(request, 'core/gatekeeper_dashboard.html')
-
 # @login_required
 # @role_required('teacher')
 # def teacher_dashboard(request):
@@ -271,3 +273,48 @@ def load_classes(request):
     department_id = request.GET.get('department_id')
     classes = Class.objects.filter(department_id=department_id).order_by('name')
     return render(request, 'core/dropdown_list_options.html', {'options': classes})
+
+@login_required
+@role_required(['gatekeeper'])
+def scan_card(request):
+    """
+    View for scanning NFC cards and loading student profiles.
+    """
+    student = None
+    error = None
+
+    if request.method == 'POST':
+        try:
+            # Simulate NFC card scanning
+            student_id = scan_nfc_card()  # Replace with actual NFC scanning logic
+            student = get_object_or_404(Student, student_id=student_id)
+        except Exception as e:
+            error = str(e)
+
+    return render(request, 'core/scan_card.html', {'student': student, 'error': error})
+
+# filepath: core/views.py
+
+@login_required
+@role_required(['gatekeeper'])
+def scan_card(request):
+    """
+    View for scanning NFC cards and loading student profiles.
+    """
+    student = None
+    error = None
+
+    if request.method == 'POST':
+        try:
+            # Simulate NFC card scanning
+            student_id = scan_nfc_card()  # Replace with actual NFC scanning logic
+            student = get_object_or_404(Student, student_id=student_id)
+        except Exception as e:
+            error = str(e)
+
+    # Exclude sensitive information
+    if student:
+        student.payment_status = None  # Hide financial status
+        student.attendance_records = None  # Hide attendance records (if applicable)
+
+    return render(request, 'core/scan_card.html', {'student': student, 'error': error})
