@@ -14,4 +14,8 @@ urlpatterns = [
     path('registrar/register-student/', views.register_student, name='register-student'),
     path('students/', views.view_all_students, name='view-all-students'),
     path('teacher/take-attendance/', views.take_attendance, name='take-attendance'),
+    path('ajax/load-colleges/', views.load_colleges, name='ajax_load_colleges'),
+    path('ajax/load-schools/', views.load_schools, name='ajax_load_schools'),
+    path('ajax/load-departments/', views.load_departments, name='ajax_load_departments'),
+    path('ajax/load-classes/', views.load_classes, name='ajax_load_classes'),
 ]

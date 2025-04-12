@@ -1,19 +1,36 @@
-<!-- filepath: core/templates/core/register_student.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Student</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Register New Student</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}  <!-- Render the form dynamically -->
+        {{ form.as_p }}
         <button type="submit">Register Student</button>
     </form>
     <a href="{% url 'registrar-dashboard' %}">Back to Dashboard</a>
+
+    <script>
+        $(document).ready(function () {
+            // Filter classes based on department
+            $('#id_department').change(function () {
+                var departmentId = $(this).val();
+                $.ajax({
+                    url: '/ajax/load-classes/',
+                    data: {
+                        'department_id': departmentId
+                    },
+                    success: function (data) {
+                        $('#id_student_class').html(data);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 ## filepath: core/views.py
-
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404 , redirect 
 from .models import Student, Attendance
 from accounts.decorators import role_required
@@ -11,6 +11,7 @@ from .forms import AttendanceFilterForm
 from .nfc_utils import scan_nfc_card
 from accounts.models import CustomUser
 import pandas as pd
+from .models import College, School, Department, Class
 
 @login_required
 @role_required(['admin', 'gatekeeper', 'registrar'])  # Allow these roles
@@ -250,3 +251,23 @@ def generate_attendance_report(filtered_students, attended_students):
     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
     df.to_csv(path_or_buf=response, index=False)
     return response
+
+def load_colleges(request):
+    campus_id = request.GET.get('campus_id')
+    colleges = College.objects.filter(campus_id=campus_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': colleges})
+
+def load_schools(request):
+    college_id = request.GET.get('college_id')
+    schools = School.objects.filter(college_id=college_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': schools})
+
+def load_departments(request):
+    school_id = request.GET.get('school_id')
+    departments = Department.objects.filter(school_id=school_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': departments})
+
+def load_classes(request):
+    department_id = request.GET.get('department_id')
+    classes = Class.objects.filter(department_id=department_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': classes})

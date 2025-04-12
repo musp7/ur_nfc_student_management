@@ -1,0 +1,5 @@
+<!-- filepath: core/templates/core/dropdown_list_options.html -->
+
+{% for option in options %}
+    <option value="{{ option.id }}">{{ option.name }}</option>
+{% endfor %}
