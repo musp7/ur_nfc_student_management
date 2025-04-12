@@ -14,6 +14,7 @@ import pandas as pd
 from .models import College, School, Department, Class
 from .forms import PaymentStatusForm
 from .forms import FinanceFilterForm
+from .forms import RegistrarFilterForm
 
 @login_required
 @role_required(['admin', 'gatekeeper', 'registrar'])  # Allow these roles
@@ -61,9 +62,52 @@ def teacher_dashboard(request):
 @role_required(['registrar'])
 def registrar_dashboard(request):
     """
-    Registrar dashboard view.
+    Registrar dashboard view with options to register a new student and view/filter registered students.
     """
-    return render(request, 'core/registrar_dashboard.html')
+    # Handle student registration
+    if request.method == 'POST' and 'register_student' in request.POST:
+        registration_form = StudentRegistrationForm(request.POST, request.FILES)
+        if registration_form.is_valid():
+            registration_form.save()
+            return redirect('registrar-dashboard')
+    else:
+        registration_form = StudentRegistrationForm()
+
+    # Handle filtering of registered students
+    students = Student.objects.all()
+    filter_form = RegistrarFilterForm(request.GET or None)
+
+    if filter_form.is_valid():
+        # Filter by campus
+        campus = filter_form.cleaned_data.get('campus')
+        if campus:
+            students = students.filter(campus=campus)
+
+        # Filter by college
+        college = filter_form.cleaned_data.get('college')
+        if college:
+            students = students.filter(college=college)
+
+        # Filter by school
+        school = filter_form.cleaned_data.get('school')
+        if school:
+            students = students.filter(school=school)
+
+        # Filter by department
+        department = filter_form.cleaned_data.get('department')
+        if department:
+            students = students.filter(department=department)
+
+        # Filter by class
+        student_class = filter_form.cleaned_data.get('student_class')
+        if student_class:
+            students = students.filter(student_class=student_class)
+
+    return render(request, 'core/registrar_dashboard.html', {
+        'registration_form': registration_form,
+        'filter_form': filter_form,
+        'students': students,
+    })
 
 @login_required
 @role_required('finance')

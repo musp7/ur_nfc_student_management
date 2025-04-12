@@ -93,3 +93,30 @@ class FinanceFilterForm(forms.Form):
         required=False,
         label="Class"
     )
+
+class RegistrarFilterForm(forms.Form):
+    campus = forms.ModelChoiceField(
+        queryset=Campus.objects.all(),
+        required=False,
+        label="Campus"
+    )
+    college = forms.ModelChoiceField(
+        queryset=College.objects.all(),
+        required=False,
+        label="College"
+    )
+    school = forms.ModelChoiceField(
+        queryset=School.objects.all(),
+        required=False,
+        label="School"
+    )
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),
+        required=False,
+        label="Department"
+    )
+    student_class = forms.ModelChoiceField(
+        queryset=Class.objects.all(),
+        required=False,
+        label="Class"
+    )
