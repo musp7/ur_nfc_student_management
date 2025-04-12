@@ -13,6 +13,7 @@ from accounts.models import CustomUser
 import pandas as pd
 from .models import College, School, Department, Class
 from .forms import PaymentStatusForm
+from .forms import FinanceFilterForm
 
 @login_required
 @role_required(['admin', 'gatekeeper', 'registrar'])  # Allow these roles
@@ -324,10 +325,28 @@ def scan_card(request):
 @role_required(['finance'])
 def finance_dashboard(request):
     """
-    Finance dashboard view.
+    Finance dashboard view with filtering functionality.
     """
     students = Student.objects.all()  # Fetch all registered students
-    return render(request, 'core/finance_dashboard.html', {'students': students})
+    form = FinanceFilterForm(request.GET or None)
+
+    if form.is_valid():
+        # Filter by payment status
+        payment_status = form.cleaned_data.get('payment_status')
+        if payment_status:
+            students = students.filter(payment_status=payment_status)
+
+        # Filter by department
+        department = form.cleaned_data.get('department')
+        if department:
+            students = students.filter(department=department)
+
+        # Filter by class
+        student_class = form.cleaned_data.get('student_class')
+        if student_class:
+            students = students.filter(student_class=student_class)
+
+    return render(request, 'core/finance_dashboard.html', {'students': students, 'form': form})
 
 @login_required
 @role_required(['finance'])

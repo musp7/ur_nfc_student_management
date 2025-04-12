@@ -1,5 +1,3 @@
-<!-- filepath: core/templates/core/finance_dashboard.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,11 +8,21 @@
 <body>
     <h1>Finance Dashboard</h1>
     <p>Welcome, {{ user.username }}!</p>
+
+    <!-- Filter Form -->
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- Students Table -->
     <table border="1">
         <thead>
             <tr>
                 <th>Student ID</th>
                 <th>Name</th>
+                <th>Class</th>
+                <th>Department</th>
                 <th>Payment Status</th>
                 <th>Actions</th>
             </tr>
@@ -24,6 +32,8 @@
                 <tr>
                     <td>{{ student.student_id }}</td>
                     <td>{{ student.first_name }} {{ student.last_name }}</td>
+                    <td>{{ student.student_class }}</td>
+                    <td>{{ student.department }}</td>
                     <td>{{ student.payment_status }}</td>
                     <td>
                         <a href="{% url 'finance-student-detail' student.id %}">View Details</a>
@@ -31,11 +41,12 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="4">No students found.</td>
+                    <td colspan="6">No students found.</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
     <li> <form method="post" action="{% url 'logout' %}">
         {% csrf_token %}
         <button type="submit">Logout</button>

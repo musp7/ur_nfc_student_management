@@ -76,3 +76,20 @@ class PaymentStatusForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = ['payment_status']   
+
+class FinanceFilterForm(forms.Form):
+    payment_status = forms.ChoiceField(
+        choices=[('', 'All')] + Student.PAYMENT_STATUS_CHOICES,
+        required=False,
+        label="Payment Status"
+    )
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),
+        required=False,
+        label="Department"
+    )
+    student_class = forms.ModelChoiceField(
+        queryset=Class.objects.all(),
+        required=False,
+        label="Class"
+    )
