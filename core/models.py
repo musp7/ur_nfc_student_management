@@ -42,9 +42,19 @@ class Class(models.Model):
 
 
 class Student(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('PAID', 'Paid'),
+        ('UNPAID', 'Unpaid'),
+        ('PENDING', 'Pending'),
+    ]
     student_id = models.CharField(max_length=20, unique=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    payment_status = models.CharField(
+        max_length=10,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='PENDING'
+    )
     campus = models.ForeignKey('Campus', on_delete=models.SET_NULL, null=True, blank=True)
     college = models.ForeignKey('College', on_delete=models.SET_NULL, null=True, blank=True)
     school = models.ForeignKey('School', on_delete=models.SET_NULL, null=True, blank=True)
@@ -52,6 +62,7 @@ class Student(models.Model):
     student_class = models.ForeignKey('Class', on_delete=models.SET_NULL, null=True, blank=True)
     photo = models.ImageField(upload_to='student_photos/', blank=True, null=True)
     nfc_url = models.URLField(blank=True, null=True)
+ 
 
     def generate_nfc_url(self, request):
         """

@@ -1,4 +1,3 @@
-<!-- filepath: core/templates/core/registrar_dashboard.html -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,8 +10,8 @@
     <h1>Registrar Dashboard</h1>
     <p>Welcome, {{ user.username }}!</p>
     <ul>
-        <li><a href="/registrar/register-student/">Register Student</a></li>
-        <li><a href="/registrar/manage-students/">Manage Students</a></li>
+        <li><a href="{% url 'register-student' %}">Register New Student</a></li>
+        <li><a href="/students/">View All Students</a></li>
         <li> <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit">Logout</button>
@@ -20,3 +19,4 @@
     </ul>
 </body>
 </html>
+

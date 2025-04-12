@@ -1,0 +1,19 @@
+<!-- filepath: core/templates/core/register_student.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Student</title>
+</head>
+<body>
+    <h1>Register New Student</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Render the form dynamically -->
+        <button type="submit">Register Student</button>
+    </form>
+    <a href="{% url 'registrar-dashboard' %}">Back to Dashboard</a>
+</body>
+</html>
