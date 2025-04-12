@@ -116,20 +116,22 @@ def finance_dashboard(request):
 
 @login_required
 @role_required(['registrar'])
-def register_student(request):
+def registrar_dashboard(request):
     """
-    View for registering a new student.
+    Registrar dashboard view with options to register a new student.
     """
-    if request.method == 'POST':
-        form = StudentRegistrationForm(request.POST, request.FILES)
-        if form.is_valid():
-            student = form.save(commit=False)
-            student.payment_status = 'PENDING'  # Set default payment status
-            student.save()
+    # Handle student registration
+    if request.method == 'POST' and 'register_student' in request.POST:
+        registration_form = StudentRegistrationForm(request.POST, request.FILES)
+        if registration_form.is_valid():
+            registration_form.save()
             return redirect('registrar-dashboard')
     else:
-        form = StudentRegistrationForm()
-    return render(request, 'core/register_student.html', {'form': form})
+        registration_form = StudentRegistrationForm()
+
+    return render(request, 'core/registrar_dashboard.html', {
+        'registration_form': registration_form,
+    })
 
 @login_required
 @role_required(['registrar'])
@@ -409,3 +411,78 @@ def finance_student_detail(request, student_id):
         form = PaymentStatusForm(instance=student)
 
     return render(request, 'core/finance_student_detail.html', {'student': student, 'form': form})
+
+@login_required
+@role_required(['registrar'])
+def registered_students(request):
+    """
+    View to display all registered students with filtering functionality.
+    """
+    students = Student.objects.all()
+    filter_form = RegistrarFilterForm(request.GET or None)
+
+    if filter_form.is_valid():
+        # Filter by campus
+        campus = filter_form.cleaned_data.get('campus')
+        if campus:
+            students = students.filter(campus=campus)
+
+        # Filter by college
+        college = filter_form.cleaned_data.get('college')
+        if college:
+            students = students.filter(college=college)
+
+        # Filter by school
+        school = filter_form.cleaned_data.get('school')
+        if school:
+            students = students.filter(school=school)
+
+        # Filter by department
+        department = filter_form.cleaned_data.get('department')
+        if department:
+            students = students.filter(department=department)
+
+        # Filter by class
+        student_class = filter_form.cleaned_data.get('student_class')
+        if student_class:
+            students = students.filter(student_class=student_class)
+
+    return render(request, 'core/registered_students.html', {
+        'students': students,
+        'filter_form': filter_form,
+    })
+
+# @login_required
+# @role_required(['registrar'])
+# def register_student(request):
+#     """
+#     View to register a new student.
+#     """
+#     if request.method == 'POST':
+#         form = StudentRegistrationForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('registered-students')  # Redirect to the registered students page
+#     else:
+#         form = StudentRegistrationForm()
+
+#     return render(request, 'core/register_student.html', {'form': form})
+
+@login_required
+@role_required(['registrar'])
+def register_student(request):
+    """
+    View to register a new student.
+    """
+    if request.method == 'POST':
+        form = StudentRegistrationForm(request.POST, request.FILES)
+        if form.is_valid():
+            student = form.save(commit=False)
+            # Generate the NFC URL
+            student.nfc_url = f"{request.scheme}://{request.get_host()}{reverse('student-profile', args=[student.student_id])}"
+            student.save()
+            return redirect('registered-students')  # Redirect to the registered students page
+    else:
+        form = StudentRegistrationForm()
+
+    return render(request, 'core/register_student.html', {'form': form})

@@ -5,15 +5,26 @@ from .models import Attendance, Department, Class
 from django import forms
 from .models import Student, Campus, College, School, Department, Class
 
+# class StudentRegistrationForm(forms.ModelForm):
+#     class Meta:
+#         model = Student
+#         fields = [
+#             'student_id', 'first_name', 'last_name', 'photo', 'campus',
+#             'college', 'school', 'department', 'student_class', 'gender', 'payment_status'
+#         ]
+#         widgets = {
+#             'gender': forms.Select(choices=[('Male', 'Male'), ('Female', 'Female')]),
+#         }
 class StudentRegistrationForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = [
-            'student_id', 'first_name', 'last_name', 'photo', 'campus',
-            'college', 'school', 'department', 'student_class', 'gender', 'payment_status'
+            'student_id', 'first_name', 'last_name', 'gender', 'payment_status',
+            'campus', 'college', 'school', 'department', 'student_class', 'photo', 'nfc_url'
         ]
         widgets = {
             'gender': forms.Select(choices=[('Male', 'Male'), ('Female', 'Female')]),
+            'payment_status': forms.Select(choices=[('PAID', 'Paid'), ('UNPAID', 'Unpaid'), ('PENDING', 'Pending')]),
         }
 
     def __init__(self, *args, **kwargs):

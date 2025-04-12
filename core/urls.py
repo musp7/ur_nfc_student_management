@@ -21,4 +21,7 @@ urlpatterns = [
     path('gatekeeper/scan-card/', views.scan_card, name='scan-card'),
     path('finance/dashboard/', views.finance_dashboard, name='finance-dashboard'),
     path('finance/student/<int:student_id>/', views.finance_student_detail, name='finance-student-detail'),
+    path('registrar/registered-students/', views.registered_students, name='registered-students'),
+    path('registrar/register-student/', views.register_student, name='register-student'),
+    path('student/<str:student_id>/', views.student_profile, name='student-profile'),
 ]

@@ -17,6 +17,54 @@
 
     <script>
         $(document).ready(function () {
+            // Filter colleges based on campus
+            $('#id_campus').change(function () {
+                var campusId = $(this).val();
+                $.ajax({
+                    url: '/ajax/load-colleges/',
+                    data: {
+                        'campus_id': campusId
+                    },
+                    success: function (data) {
+                        $('#id_college').html(data);
+                        $('#id_school').html('<option value="">---------</option>');  // Reset schools
+                        $('#id_department').html('<option value="">---------</option>');  // Reset departments
+                        $('#id_student_class').html('<option value="">---------</option>');  // Reset classes
+                    }
+                });
+            });
+
+            // Filter schools based on college
+            $('#id_college').change(function () {
+                var collegeId = $(this).val();
+                $.ajax({
+                    url: '/ajax/load-schools/',
+                    data: {
+                        'college_id': collegeId
+                    },
+                    success: function (data) {
+                        $('#id_school').html(data);
+                        $('#id_department').html('<option value="">---------</option>');  // Reset departments
+                        $('#id_student_class').html('<option value="">---------</option>');  // Reset classes
+                    }
+                });
+            });
+
+            // Filter departments based on school
+            $('#id_school').change(function () {
+                var schoolId = $(this).val();
+                $.ajax({
+                    url: '/ajax/load-departments/',
+                    data: {
+                        'school_id': schoolId
+                    },
+                    success: function (data) {
+                        $('#id_department').html(data);
+                        $('#id_student_class').html('<option value="">---------</option>');  // Reset classes
+                    }
+                });
+            });
+
             // Filter classes based on department
             $('#id_department').change(function () {
                 var departmentId = $(this).val();
