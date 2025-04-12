@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
+from django.utils.timezone import now
 
 class Campus(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -81,3 +82,18 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.student_id})"
+    
+class Attendance(models.Model):
+    ATTENDANCE_TYPE_CHOICES = [
+        ('CLASS', 'Class'),
+        ('EXAM_START', 'Exam Start'),
+        ('EXAM_END', 'Exam End'),
+    ]
+
+    student = models.ForeignKey('Student', on_delete=models.CASCADE)
+    teacher = models.ForeignKey('accounts.CustomUser', on_delete=models.CASCADE)
+    attendance_type = models.CharField(max_length=20, choices=ATTENDANCE_TYPE_CHOICES)
+    timestamp = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return f"{self.student} - {self.attendance_type} - {self.timestamp}"

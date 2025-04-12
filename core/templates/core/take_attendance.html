@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Attendance</title>
+</head>
+<body>
+    <h1>Take Attendance</h1>
+
+    <!-- Filter Students -->
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" name="filter_students">Filter Students</button>
+    </form>
+
+    <!-- Display Filtered Students -->
+    {% if students %}
+        <h2>Filtered Students</h2>
+        <ul>
+            {% for student in students %}
+                <li>{{ student.first_name }} {{ student.last_name }} ({{ student.student_id }})</li>
+            {% endfor %}
+        </ul>
+        <p>Scan NFC cards to mark attendance.</p>
+    {% endif %}
+
+    <!-- End Attendance -->
+    {% if students %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="end_attendance">End Attendance</button>
+        </form>
+    {% endif %}
+
+    <a href="{% url 'teacher-dashboard' %}">Back to Dashboard</a>
+</body>
+</html>
