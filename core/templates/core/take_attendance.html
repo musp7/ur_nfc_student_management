@@ -4,36 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Take Attendance</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Take Attendance</h1>
 
-    <!-- Filter Students -->
+    <!-- Filter Form -->
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" name="filter_students">Filter Students</button>
+        <button type="submit" name="filter_students">Filter</button>
     </form>
 
-    <!-- Display Filtered Students -->
-    {% if students %}
-        <h2>Filtered Students</h2>
-        <ul>
+    <!-- Students Table -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Department</th>
+                <th>School</th>
+                <th>College</th>
+                <th>Campus</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for student in students %}
-                <li>{{ student.first_name }} {{ student.last_name }} ({{ student.student_id }})</li>
+                <tr>
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.first_name }} {{ student.last_name }}</td>
+                    <td>{{ student.student_class }}</td>
+                    <td>{{ student.department }}</td>
+                    <td>{{ student.school }}</td>
+                    <td>{{ student.college }}</td>
+                    <td>{{ student.campus }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">No students found.</td>
+                </tr>
             {% endfor %}
-        </ul>
-        <p>Scan NFC cards to mark attendance.</p>
-    {% endif %}
+        </tbody>
+    </table>
 
-    <!-- End Attendance -->
-    {% if students %}
-        <form method="post">
-            {% csrf_token %}
-            <button type="submit" name="end_attendance">End Attendance</button>
-        </form>
-    {% endif %}
+    <!-- End Attendance Button -->
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="end_attendance">End Attendance and Download Report</button>
+    </form>
 
-    <a href="{% url 'teacher-dashboard' %}">Back to Dashboard</a>
+    <script>
+        $(document).ready(function () {
+            // Handle NFC card scanning
+            $(document).on('keydown', function (event) {
+                const scannedStudentId = event.key; // Replace with actual NFC input logic
+
+                // Send the scanned student ID to the backend
+                $.ajax({
+                    url: "{% url 'scan-nfc' %}",
+                    method: "POST",
+                    data: {
+                        'student_id': scannedStudentId,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        alert(response.message); // Show a popup with the success message
+                    },
+                    error: function (xhr) {
+                        alert("Error: " + xhr.responseText); // Show an error message
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

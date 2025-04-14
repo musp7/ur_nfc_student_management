@@ -16,12 +16,36 @@ from .forms import PaymentStatusForm
 from .forms import FinanceFilterForm
 from .forms import RegistrarFilterForm
 from django.urls import reverse
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 
 @login_required
-@role_required(['admin', 'gatekeeper', 'registrar'])  # Allow these roles
+@role_required(['admin', 'gatekeeper', 'registrar','teacher'])  # Allow these roles
 def student_profile(request, student_id):
-     student = get_object_or_404(Student, student_id=student_id)
-     return render(request, 'core/student_profile.html', {'student': student})
+    """
+    View to display a student's profile and mark attendance if applicable.
+    """
+    student = get_object_or_404(Student, student_id=student_id)
+
+    # Check if the student is among the filtered students for the current session
+    filtered_student_ids = request.session.get('filtered_students', [])
+    attendance_type = request.session.get('attendance_type')
+
+    if student.id in filtered_student_ids:
+        # Mark the student as present
+        Attendance.objects.get_or_create(
+            student=student,
+            teacher=request.user,
+            attendance_type=attendance_type
+        )
+
+    return render(request, 'core/student_profile.html', {
+        'student': student,
+    })
+# def student_profile(request, student_id):
+#      student = get_object_or_404(Student, student_id=student_id)
+#      return render(request, 'core/student_profile.html', {'student': student})
 
 
 
@@ -144,67 +168,56 @@ def view_all_students(request):
     return render(request, 'core/view_all_students.html', {'students': students})
 
 
-# @login_required
-# @role_required(['teacher'])
-# def take_attendance(request):
+
+
+
+
+
+# def generate_attendance_report(filtered_students, attended_students):
 #     """
-#     View for taking attendance.
+#     Generate a CSV attendance report for the filtered students.
 #     """
-#     students = None
-#     attended_students = []
-#     form = AttendanceFilterForm()  # Initialize the form by default
+#     # Create a list of attended student IDs
+#     attended_student_ids = [attendance.student.id for attendance in attended_students]
 
-#     if request.method == 'POST':
-#         if 'filter_students' in request.POST:  # Filter students
-#             form = AttendanceFilterForm(request.POST)
-#             if form.is_valid():
-#                 department = form.cleaned_data['department']
-#                 level = form.cleaned_data['level']
-#                 attendance_type = form.cleaned_data['attendance_type']
+#     # Prepare data for the report
+#     report_data = []
+#     for student in filtered_students:
+#         report_data.append({
+#             'Student ID': student.student_id,
+#             'First Name': student.first_name,
+#             'Last Name': student.last_name,
+#             'Attendance Status': 'Attended' if student.id in attended_student_ids else 'Absent'
+#         })
 
-#                 # Filter students based on department and level
-#                 students = Student.objects.all()
-#                 if department:
-#                     students = students.filter(department=department)
-#                 if level:
-#                     students = students.filter(student_class=level)
+#     # Create a DataFrame using pandas
+#     df = pd.DataFrame(report_data)
 
-#                 # Save attendance type in session for NFC scanning
-#                 request.session['attendance_type'] = attendance_type
+#     # Generate a CSV response
+#     response = HttpResponse(content_type='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
+#     df.to_csv(path_or_buf=response, index=False)
+#     return response
 
-#         elif 'scan_nfc' in request.POST:  # Scan NFC card
-#             try:
-#                 student_id = scan_nfc_card()  # Scan the NFC card
-#                 student = Student.objects.get(student_id=student_id)
-#                 attendance_type = request.session.get('attendance_type')
+def load_colleges(request):
+    campus_id = request.GET.get('campus_id')
+    colleges = College.objects.filter(campus_id=campus_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': colleges})
 
-#                 # Record attendance
-#                 Attendance.objects.create(
-#                     student=student,
-#                     teacher=request.user,
-#                     attendance_type=attendance_type
-#                 )
-#                 attended_students.append(student)
-#             except Exception as e:
-#                 return render(request, 'core/take_attendance.html', {
-#                     'form': form,
-#                     'students': students,
-#                     'error': str(e)
-#                 })
+def load_schools(request):
+    college_id = request.GET.get('college_id')
+    schools = School.objects.filter(college_id=college_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': schools})
 
-#         elif 'end_attendance' in request.POST:  # End attendance
-#             # Fetch attended students from the database
-#             attendance_type = request.session.get('attendance_type')
-#             attended_students = Attendance.objects.filter(
-#                 teacher=request.user,
-#                 attendance_type=attendance_type
-#             ).select_related('student')
+def load_departments(request):
+    school_id = request.GET.get('school_id')
+    departments = Department.objects.filter(school_id=school_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': departments})
 
-#     return render(request, 'core/take_attendance.html', {
-#         'form': form,
-#         'students': students,
-#         'attended_students': attended_students,
-#     })
+def load_classes(request):
+    department_id = request.GET.get('department_id')
+    classes = Class.objects.filter(department_id=department_id).order_by('name')
+    return render(request, 'core/dropdown_list_options.html', {'options': classes})
 
 @login_required
 @role_required(['teacher'])
@@ -234,26 +247,6 @@ def take_attendance(request):
                 request.session['attendance_type'] = attendance_type
                 request.session['filtered_students'] = list(students.values_list('id', flat=True))
 
-        elif 'scan_nfc' in request.POST:  # Scan NFC card
-            try:
-                student_id = scan_nfc_card()  # Scan the NFC card
-                student = Student.objects.get(student_id=student_id)
-                attendance_type = request.session.get('attendance_type')
-
-                # Record attendance
-                Attendance.objects.create(
-                    student=student,
-                    teacher=request.user,
-                    attendance_type=attendance_type
-                )
-                attended_students.append(student)
-            except Exception as e:
-                return render(request, 'core/take_attendance.html', {
-                    'form': form,
-                    'students': students,
-                    'error': str(e)
-                })
-
         elif 'end_attendance' in request.POST:  # End attendance and generate report
             # Restore filtered students from the session
             filtered_student_ids = request.session.get('filtered_students', [])
@@ -276,13 +269,38 @@ def take_attendance(request):
         'attended_students': attended_students,
     })
 
+@csrf_exempt
+@login_required
+@role_required(['teacher'])
+def scan_nfc(request):
+    """
+    Handle NFC card scanning via AJAX.
+    """
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        attendance_type = request.session.get('attendance_type')
+
+        try:
+            student = Student.objects.get(student_id=student_id)
+            # Record attendance
+            Attendance.objects.create(
+                student=student,
+                teacher=request.user,
+                attendance_type=attendance_type
+            )
+            return JsonResponse({'message': f"Student {student.student_id} is scanned successfully."})
+        except Student.DoesNotExist:
+            return JsonResponse({'error': "Student not found."}, status=404)
+
+    return JsonResponse({'error': "Invalid request method."}, status=400)
+
 
 def generate_attendance_report(filtered_students, attended_students):
     """
     Generate a CSV attendance report for the filtered students.
     """
-    # Create a list of attended student IDs
-    attended_student_ids = [attendance.student.id for attendance in attended_students]
+    # Create a set of attended student IDs for faster lookup
+    attended_student_ids = {attendance.student.id for attendance in attended_students}
 
     # Prepare data for the report
     report_data = []
@@ -302,47 +320,6 @@ def generate_attendance_report(filtered_students, attended_students):
     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
     df.to_csv(path_or_buf=response, index=False)
     return response
-
-def load_colleges(request):
-    campus_id = request.GET.get('campus_id')
-    colleges = College.objects.filter(campus_id=campus_id).order_by('name')
-    return render(request, 'core/dropdown_list_options.html', {'options': colleges})
-
-def load_schools(request):
-    college_id = request.GET.get('college_id')
-    schools = School.objects.filter(college_id=college_id).order_by('name')
-    return render(request, 'core/dropdown_list_options.html', {'options': schools})
-
-def load_departments(request):
-    school_id = request.GET.get('school_id')
-    departments = Department.objects.filter(school_id=school_id).order_by('name')
-    return render(request, 'core/dropdown_list_options.html', {'options': departments})
-
-def load_classes(request):
-    department_id = request.GET.get('department_id')
-    classes = Class.objects.filter(department_id=department_id).order_by('name')
-    return render(request, 'core/dropdown_list_options.html', {'options': classes})
-
-@login_required
-@role_required(['gatekeeper'])
-def scan_card(request):
-    """
-    View for scanning NFC cards and loading student profiles.
-    """
-    student = None
-    error = None
-
-    if request.method == 'POST':
-        try:
-            # Simulate NFC card scanning
-            student_id = scan_nfc_card()  # Replace with actual NFC scanning logic
-            student = get_object_or_404(Student, student_id=student_id)
-        except Exception as e:
-            error = str(e)
-
-    return render(request, 'core/scan_card.html', {'student': student, 'error': error})
-
-# filepath: core/views.py
 
 @login_required
 @role_required(['gatekeeper'])
@@ -491,3 +468,38 @@ def register_student(request):
         form = StudentRegistrationForm()
 
     return render(request, 'core/register_student.html', {'form': form})
+
+
+# @csrf_exempt
+# def mark_attendance(request):
+#     """
+#     View to mark attendance when an NFC card is scanned.
+#     """
+#     if request.method == 'POST':
+#         student_id = request.POST.get('student_id')
+#         try:
+#             student = Student.objects.get(student_id=student_id)
+#             # Mark attendance for the student
+#             Attendance.objects.create(student=student, status='Present')
+#             return JsonResponse({'message': f"Student {student.student_id} is marked as present."})
+#         except Student.DoesNotExist:
+#             return JsonResponse({'message': "Student not found."}, status=404)
+#     return JsonResponse({'message': "Invalid request method."}, status=400)
+
+# def download_attendance_report(request):
+#     """
+#     View to generate and download the attendance report.
+#     """
+#     # Create the HttpResponse object with the appropriate CSV header.
+#     response = HttpResponse(content_type='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
+
+#     writer = csv.writer(response)
+#     writer.writerow(['Student ID', 'Name', 'Status', 'Timestamp'])
+
+#     # Fetch attendance records
+#     attendance_records = Attendance.objects.all()
+#     for record in attendance_records:
+#         writer.writerow([record.student.student_id, f"{record.student.first_name} {record.student.last_name}", record.status, record.timestamp])
+
+#     return response

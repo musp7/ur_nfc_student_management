@@ -180,6 +180,21 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.student_id})"
     
+# class Attendance(models.Model):
+#     ATTENDANCE_TYPE_CHOICES = [
+#         ('CLASS', 'Class'),
+#         ('EXAM_START', 'Exam Start'),
+#         ('EXAM_END', 'Exam End'),
+#     ]
+
+#     student = models.ForeignKey('Student', on_delete=models.CASCADE)
+#     teacher = models.ForeignKey('accounts.CustomUser', on_delete=models.CASCADE)
+#     attendance_type = models.CharField(max_length=20, choices=ATTENDANCE_TYPE_CHOICES)
+#     timestamp = models.DateTimeField(default=now)
+
+#     def __str__(self):
+#         return f"{self.student} - {self.attendance_type} - {self.timestamp}"
+
 class Attendance(models.Model):
     ATTENDANCE_TYPE_CHOICES = [
         ('CLASS', 'Class'),
@@ -192,6 +207,8 @@ class Attendance(models.Model):
     attendance_type = models.CharField(max_length=20, choices=ATTENDANCE_TYPE_CHOICES)
     timestamp = models.DateTimeField(default=now)
 
+    class Meta:
+        unique_together = ('student', 'teacher', 'attendance_type')  # Prevent duplicate records
+
     def __str__(self):
         return f"{self.student} - {self.attendance_type} - {self.timestamp}"
-

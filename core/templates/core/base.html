@@ -16,7 +16,7 @@
                     {% csrf_token %}
                     <button type="submit">Logout</button></li>
                 {% if user.role == 'gatekeeper' %}
-                    <li><a href="/students/dashboard/">Gatekeeper Dashboard</a></li>
+                    <li><a href="/gatekeeper/dashboard/">Gatekeeper Dashboard</a></li>
                 {% elif user.role == 'teacher' %}
                     <li><a href="/teacher/dashboard/">Teacher Dashboard</a></li>
                 {% elif user.role == 'registrar' %}
