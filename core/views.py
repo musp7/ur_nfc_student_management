@@ -173,32 +173,6 @@ def view_all_students(request):
 
 
 
-# def generate_attendance_report(filtered_students, attended_students):
-#     """
-#     Generate a CSV attendance report for the filtered students.
-#     """
-#     # Create a list of attended student IDs
-#     attended_student_ids = [attendance.student.id for attendance in attended_students]
-
-#     # Prepare data for the report
-#     report_data = []
-#     for student in filtered_students:
-#         report_data.append({
-#             'Student ID': student.student_id,
-#             'First Name': student.first_name,
-#             'Last Name': student.last_name,
-#             'Attendance Status': 'Attended' if student.id in attended_student_ids else 'Absent'
-#         })
-
-#     # Create a DataFrame using pandas
-#     df = pd.DataFrame(report_data)
-
-#     # Generate a CSV response
-#     response = HttpResponse(content_type='text/csv')
-#     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
-#     df.to_csv(path_or_buf=response, index=False)
-#     return response
-
 def load_colleges(request):
     campus_id = request.GET.get('campus_id')
     colleges = College.objects.filter(campus_id=campus_id).order_by('name')
@@ -297,7 +271,7 @@ def scan_nfc(request):
 
 def generate_attendance_report(filtered_students, attended_students):
     """
-    Generate a CSV attendance report for the filtered students.
+    Generate a CSV attendance report for the filtered students with a detailed header.
     """
     # Create a set of attended student IDs for faster lookup
     attended_student_ids = {attendance.student.id for attendance in attended_students}
@@ -312,14 +286,35 @@ def generate_attendance_report(filtered_students, attended_students):
             'Attendance Status': 'Attended' if student.id in attended_student_ids else 'Absent'
         })
 
-    # Create a DataFrame using pandas
-    df = pd.DataFrame(report_data)
+    # Extract additional details for the header
+    if attended_students:
+        teacher_name = attended_students[0].teacher.get_full_name()
+        attendance_type = attended_students[0].attendance_type
+        date = attended_students[0].timestamp.strftime('%Y-%m-%d')
+    else:
+        teacher_name = "N/A"
+        attendance_type = "N/A"
+        date = "N/A"
+
+    department = filtered_students[0].department.name if filtered_students else "N/A"
+    student_class = filtered_students[0].student_class.name if filtered_students else "N/A"
 
     # Generate a CSV response
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
+
+    # Write the header details
+    response.write(f"Attendance Type: {attendance_type}\n")
+    response.write(f"Department: {department}\n")
+    response.write(f"Class: {student_class}\n")
+    response.write(f"Date: {date}\n")
+    response.write(f"Teacher: {teacher_name}\n\n")
+
+    # Write the student attendance data
+    df = pd.DataFrame(report_data)
     df.to_csv(path_or_buf=response, index=False)
     return response
+
 
 @login_required
 @role_required(['gatekeeper'])
@@ -434,21 +429,6 @@ def registered_students(request):
 
 
 
-# @login_required
-# @role_required(['registrar'])
-# def register_student(request):
-#     """
-#     View to register a new student, replicating the backend behavior.
-#     """
-#     if request.method == 'POST':
-#         form = StudentRegistrationForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()  # Save the student to the database
-#             return redirect('registered-students')  # Redirect to the registered students page
-#     else:
-#         form = StudentRegistrationForm()
-
-#     return render(request, 'core/register_student.html', {'form': form})
 
 @login_required
 @role_required(['registrar'])
@@ -470,36 +450,3 @@ def register_student(request):
     return render(request, 'core/register_student.html', {'form': form})
 
 
-# @csrf_exempt
-# def mark_attendance(request):
-#     """
-#     View to mark attendance when an NFC card is scanned.
-#     """
-#     if request.method == 'POST':
-#         student_id = request.POST.get('student_id')
-#         try:
-#             student = Student.objects.get(student_id=student_id)
-#             # Mark attendance for the student
-#             Attendance.objects.create(student=student, status='Present')
-#             return JsonResponse({'message': f"Student {student.student_id} is marked as present."})
-#         except Student.DoesNotExist:
-#             return JsonResponse({'message': "Student not found."}, status=404)
-#     return JsonResponse({'message': "Invalid request method."}, status=400)
-
-# def download_attendance_report(request):
-#     """
-#     View to generate and download the attendance report.
-#     """
-#     # Create the HttpResponse object with the appropriate CSV header.
-#     response = HttpResponse(content_type='text/csv')
-#     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
-
-#     writer = csv.writer(response)
-#     writer.writerow(['Student ID', 'Name', 'Status', 'Timestamp'])
-
-#     # Fetch attendance records
-#     attendance_records = Attendance.objects.all()
-#     for record in attendance_records:
-#         writer.writerow([record.student.student_id, f"{record.student.first_name} {record.student.last_name}", record.status, record.timestamp])
-
-#     return response
