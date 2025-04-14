@@ -288,7 +288,8 @@ def generate_attendance_report(filtered_students, attended_students):
 
     # Extract additional details for the header
     if attended_students:
-        teacher_name = attended_students[0].teacher.get_full_name()
+        teacher = attended_students[0].teacher
+        teacher_name = teacher.get_full_name() if teacher.get_full_name() else teacher.username
         attendance_type = attended_students[0].attendance_type
         date = attended_students[0].timestamp.strftime('%Y-%m-%d')
     else:
@@ -314,7 +315,6 @@ def generate_attendance_report(filtered_students, attended_students):
     df = pd.DataFrame(report_data)
     df.to_csv(path_or_buf=response, index=False)
     return response
-
 
 @login_required
 @role_required(['gatekeeper'])
