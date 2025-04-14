@@ -24,4 +24,5 @@ urlpatterns = [
     path('registrar/registered-students/', views.registered_students, name='registered-students'),
     path('registrar/register-student/', views.register_student, name='register-student'),
     path('student/<str:student_id>/', views.student_profile, name='student-profile'),
+   
 ]

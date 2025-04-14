@@ -20,8 +20,8 @@ from django.urls import reverse
 @login_required
 @role_required(['admin', 'gatekeeper', 'registrar'])  # Allow these roles
 def student_profile(request, student_id):
-    student = get_object_or_404(Student, student_id=student_id)
-    return render(request, 'core/student_profile.html', {'student': student})
+     student = get_object_or_404(Student, student_id=student_id)
+     return render(request, 'core/student_profile.html', {'student': student})
 
 
 

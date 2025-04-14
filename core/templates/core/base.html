@@ -16,13 +16,13 @@
                     {% csrf_token %}
                     <button type="submit">Logout</button></li>
                 {% if user.role == 'gatekeeper' %}
-                    <li><a href="/students/">Gatekeeper Dashboard</a></li>
+                    <li><a href="/students/dashboard/">Gatekeeper Dashboard</a></li>
                 {% elif user.role == 'teacher' %}
-                    <li><a href="/teacher/">Teacher Dashboard</a></li>
+                    <li><a href="/teacher/dashboard/">Teacher Dashboard</a></li>
                 {% elif user.role == 'registrar' %}
-                    <li><a href="/registrar/">Registrar Dashboard</a></li>
+                    <li><a href="/registrar/dashboard/">Registrar Dashboard</a></li>
                 {% elif user.role == 'finance' %}
-                    <li><a href="/finance/">Finance Dashboard</a></li>
+                    <li><a href="/finance/dashboard/">Finance Dashboard</a></li>
                 {% endif %}
             {% else %}
                 <li><a href="{% url 'login' %}">Login</a></li>

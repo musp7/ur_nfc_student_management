@@ -4,31 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .dashboard-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .logout-btn {
+            background-color: #f44336;
+        }
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+        .registration-form {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Registrar Dashboard</h1>
-    <p>Welcome, {{ user.username }}!</p>
+    <div class="dashboard-container">
+        <h1>Registrar Dashboard</h1>
+        <p>Welcome, {{ user.username }}!</p>
 
-    <!-- Button to navigate to the Registered Students Page -->
-    <a href="{% url 'registered-students' %}">
-        <button>View Registered Students</button>
-    </a>
+        <div class="button-group">
+            <!-- Button to navigate to the Registered Students Page -->
+            <a href="{% url 'registered-students' %}">
+                <button>View Registered Students</button>
+            </a>
 
-    <!-- Register New Student -->
-    <h2>Register New Student</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ registration_form.as_p }}
-        <button type="submit" name="register_student">Register Student</button>
-    </form>
+            <!-- Logout Button -->
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+
+        <!-- Register New Student -->
+        <div class="registration-form">
+            <h2>Register New Student</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ registration_form.as_p }}
+                <button type="submit" name="register_student">Register Student</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
-    </form>   
-        <li> <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-        </form></li>
-    </ul>
-</body>
-</html>
-
