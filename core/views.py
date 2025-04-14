@@ -15,6 +15,7 @@ from .models import College, School, Department, Class
 from .forms import PaymentStatusForm
 from .forms import FinanceFilterForm
 from .forms import RegistrarFilterForm
+from django.urls import reverse
 
 @login_required
 @role_required(['admin', 'gatekeeper', 'registrar'])  # Allow these roles
@@ -454,19 +455,18 @@ def registered_students(request):
 
 
 
+
+
 # @login_required
 # @role_required(['registrar'])
 # def register_student(request):
 #     """
-#     View to register a new student.
+#     View to register a new student, replicating the backend behavior.
 #     """
 #     if request.method == 'POST':
 #         form = StudentRegistrationForm(request.POST, request.FILES)
 #         if form.is_valid():
-#             student = form.save(commit=False)
-#             # Generate the NFC URL
-#             student.nfc_url = f"{request.scheme}://{request.get_host()}{reverse('student-profile', args=[student.student_id])}"
-#             student.save()
+#             form.save()  # Save the student to the database
 #             return redirect('registered-students')  # Redirect to the registered students page
 #     else:
 #         form = StudentRegistrationForm()
@@ -477,12 +477,15 @@ def registered_students(request):
 @role_required(['registrar'])
 def register_student(request):
     """
-    View to register a new student, replicating the backend behavior.
+    View to register a new student and automatically assign an NFC URL.
     """
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()  # Save the student to the database
+            student = form.save(commit=False)  # Do not save to the database yet
+            # Generate the NFC URL
+            student.nfc_url = f"{request.scheme}://{request.get_host()}{reverse('student-profile', args=[student.student_id])}"
+            student.save()  # Save the student to the database
             return redirect('registered-students')  # Redirect to the registered students page
     else:
         form = StudentRegistrationForm()

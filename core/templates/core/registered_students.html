@@ -27,6 +27,7 @@
                 <th>School</th>
                 <th>College</th>
                 <th>Campus</th>
+                <th>NFC URL</th>
             </tr>
         </thead>
         <tbody>
@@ -40,10 +41,17 @@
                     <td>{{ student.school }}</td>
                     <td>{{ student.college }}</td>
                     <td>{{ student.campus }}</td>
+                    <td>
+                        {% if student.nfc_url %}
+                            <a href="{{ student.nfc_url }}" target="_blank">View NFC Link</a>
+                        {% else %}
+                            Not Assigned
+                        {% endif %}
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="8">No students found.</td>
+                    <td colspan="9">No students found.</td>
                 </tr>
             {% endfor %}
         </tbody>
