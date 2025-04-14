@@ -452,6 +452,8 @@ def registered_students(request):
         'filter_form': filter_form,
     })
 
+
+
 # @login_required
 # @role_required(['registrar'])
 # def register_student(request):
@@ -461,7 +463,10 @@ def registered_students(request):
 #     if request.method == 'POST':
 #         form = StudentRegistrationForm(request.POST, request.FILES)
 #         if form.is_valid():
-#             form.save()
+#             student = form.save(commit=False)
+#             # Generate the NFC URL
+#             student.nfc_url = f"{request.scheme}://{request.get_host()}{reverse('student-profile', args=[student.student_id])}"
+#             student.save()
 #             return redirect('registered-students')  # Redirect to the registered students page
 #     else:
 #         form = StudentRegistrationForm()
@@ -472,15 +477,12 @@ def registered_students(request):
 @role_required(['registrar'])
 def register_student(request):
     """
-    View to register a new student.
+    View to register a new student, replicating the backend behavior.
     """
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            student = form.save(commit=False)
-            # Generate the NFC URL
-            student.nfc_url = f"{request.scheme}://{request.get_host()}{reverse('student-profile', args=[student.student_id])}"
-            student.save()
+            form.save()  # Save the student to the database
             return redirect('registered-students')  # Redirect to the registered students page
     else:
         form = StudentRegistrationForm()
