@@ -49,40 +49,13 @@ class Class(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='classes')
 
     class Meta:
+        verbose_name_plural = "Classes"
         unique_together = ('name', 'department')  # Ensure unique classes within a department
 
     def __str__(self):
         return f"{self.name} ({self.department.name})"
 
-# class Campus(models.Model):
-#     name = models.CharField(max_length=100, unique=True)
 
-#     def __str__(self):
-#         return self.name
-
-
-# class College(models.Model):
-#     name = models.CharField(max_length=100, unique=True)
-#     campus = models.ForeignKey(Campus, on_delete=models.CASCADE, related_name="colleges")
-
-#     def __str__(self):
-#         return f"{self.name} ({self.campus.name})"
-
-
-# class School(models.Model):
-#     name = models.CharField(max_length=100, unique=True)
-#     college = models.ForeignKey(College, on_delete=models.CASCADE, related_name="schools")
-
-#     def __str__(self):
-#         return f"{self.name} ({self.college.name})"
-
-
-# class Department(models.Model):
-#     name = models.CharField(max_length=100, unique=True)
-#     school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="departments")
-
-#     def __str__(self):
-#         return f"{self.name} ({self.school.name})"
 
 
 # class Class(models.Model):

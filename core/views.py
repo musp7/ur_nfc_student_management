@@ -495,11 +495,13 @@ def edit_students(request):
     student_ids = request.GET.get('ids', '').split(',')
     students = Student.objects.filter(id__in=student_ids)
 
-    # Retrieve the department from the session or request
-    department_id = request.session.get('filtered_department')  # Assuming the department is stored in the session
-    classes = Class.objects.none()
-    if department_id:
-        classes = Class.objects.filter(department_id=department_id)
+    # Get classes - modified code goes here
+    classes = Class.objects.none()  # Default empty queryset
+    if students.exists():
+        # Assuming all selected students are from the same department
+        department = students.first().department
+        if department:  # Check if department exists
+            classes = Class.objects.filter(department=department).order_by('name')
 
     if request.method == 'POST':
         new_class_id = request.POST.get('student_class')
@@ -525,3 +527,4 @@ def delete_students(request):
         Student.objects.filter(id__in=student_ids).delete()
         messages.success(request, "Selected students deleted successfully.")
         return redirect('registered-students')
+    
