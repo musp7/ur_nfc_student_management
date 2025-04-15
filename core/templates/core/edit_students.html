@@ -1,0 +1,25 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Edit Students</title>
+</head>
+<body>
+    <h1>Bulk Edit Students</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="student_class">New Class:</label>
+        <select name="student_class" id="student_class" required>
+            <option value="">---------</option>
+            {% for class in classes %}
+                <option value="{{ class.id }}">{{ class.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Update Class</button>
+    </form>
+    <a href="{% url 'registered-students' %}">Back to Registered Students</a>
+</body>
+</html>

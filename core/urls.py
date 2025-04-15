@@ -25,5 +25,7 @@ urlpatterns = [
     path('registrar/register-student/', views.register_student, name='register-student'),
     path('student/<str:student_id>/', views.student_profile, name='student-profile'),
     path('teacher/scan-nfc/', views.scan_nfc, name='scan-nfc'),
-
+    path('registrar/edit-student/<int:student_id>/', views.edit_student, name='edit-student'),
+    path('registrar/edit-students/', views.edit_students, name='edit-students'),
+    path('registrar/delete-students/', views.delete_students, name='delete-students'),
 ]

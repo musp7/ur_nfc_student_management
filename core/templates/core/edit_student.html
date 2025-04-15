@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Student</title>
+    <title>Edit Student</title>
 </head>
 <body>
-    <h1>Register New Student</h1>
+    <h1>Edit Student: {{ student.first_name }} {{ student.last_name }}</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Register Student</button>
+        <button type="submit">Save Changes</button>
     </form>
-    <a href="{% url 'registrar-dashboard' %}">Back to Dashboard</a>
+    <a href="{% url 'registered-students' %}">Back to Registered Students</a>
 </body>
 </html>

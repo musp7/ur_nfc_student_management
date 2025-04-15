@@ -1,6 +1,7 @@
 ## filepath: core/views.py
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404 , redirect 
+from django.contrib import messages
 from .models import Student, Attendance
 from accounts.decorators import role_required
 from django.contrib.auth.decorators import login_required
@@ -450,3 +451,77 @@ def register_student(request):
     return render(request, 'core/register_student.html', {'form': form})
 
 
+@login_required
+@role_required(['registrar'])
+def edit_student(request, student_id):
+    """
+    View to edit a single student's details.
+    """
+    student = get_object_or_404(Student, id=student_id)
+    if request.method == 'POST':
+        form = StudentRegistrationForm(request.POST, request.FILES, instance=student)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Student {student.first_name} {student.last_name} updated successfully.")
+            return redirect('registered-students')
+    else:
+        form = StudentRegistrationForm(instance=student)
+
+    return render(request, 'core/edit_student.html', {'form': form, 'student': student})
+
+# @login_required
+# @role_required(['registrar'])
+# def edit_students(request):
+#     """
+#     View to bulk edit students' class.
+#     """
+#     student_ids = request.GET.get('ids', '').split(',')
+#     students = Student.objects.filter(id__in=student_ids)
+
+#     if request.method == 'POST':
+#         new_class = request.POST.get('student_class')
+#         if new_class:
+#             students.update(student_class=new_class)
+#             messages.success(request, "Selected students' class updated successfully.")
+#             return redirect('registered-students')
+#     return render(request, 'core/edit_students.html', {'students': students})
+
+@login_required
+@role_required(['registrar'])
+def edit_students(request):
+    """
+    View to bulk edit students' class.
+    """
+    student_ids = request.GET.get('ids', '').split(',')
+    students = Student.objects.filter(id__in=student_ids)
+
+    # Retrieve the department from the session or request
+    department_id = request.session.get('filtered_department')  # Assuming the department is stored in the session
+    classes = Class.objects.none()
+    if department_id:
+        classes = Class.objects.filter(department_id=department_id)
+
+    if request.method == 'POST':
+        new_class_id = request.POST.get('student_class')
+        if new_class_id:
+            new_class = Class.objects.get(id=new_class_id)
+            students.update(student_class=new_class)
+            messages.success(request, "Selected students' class updated successfully.")
+            return redirect('registered-students')
+
+    return render(request, 'core/edit_students.html', {
+        'students': students,
+        'classes': classes,
+    })
+
+@login_required
+@role_required(['registrar'])
+def delete_students(request):
+    """
+    View to delete selected students.
+    """
+    if request.method == 'POST':
+        student_ids = request.POST.getlist('selected_students')
+        Student.objects.filter(id__in=student_ids).delete()
+        messages.success(request, "Selected students deleted successfully.")
+        return redirect('registered-students')
