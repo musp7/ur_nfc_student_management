@@ -58,13 +58,6 @@ class Class(models.Model):
 
 
 
-# class Class(models.Model):
-#     name = models.CharField(max_length=100, unique=True)
-#     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="classes")
-
-#     def __str__(self):
-#         return f"{self.name} ({self.department.name})"
-
 
 class Student(models.Model):
     GENDER_CHOICES = [
@@ -126,6 +119,7 @@ class Student(models.Model):
         blank=True,
         related_name='students'
     )
+    laptop_serial = models.CharField(max_length=50, blank=True, null=True)
     photo = models.ImageField(
         upload_to='student_photos/',
         blank=True,
@@ -153,20 +147,7 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.student_id})"
     
-# class Attendance(models.Model):
-#     ATTENDANCE_TYPE_CHOICES = [
-#         ('CLASS', 'Class'),
-#         ('EXAM_START', 'Exam Start'),
-#         ('EXAM_END', 'Exam End'),
-#     ]
 
-#     student = models.ForeignKey('Student', on_delete=models.CASCADE)
-#     teacher = models.ForeignKey('accounts.CustomUser', on_delete=models.CASCADE)
-#     attendance_type = models.CharField(max_length=20, choices=ATTENDANCE_TYPE_CHOICES)
-#     timestamp = models.DateTimeField(default=now)
-
-#     def __str__(self):
-#         return f"{self.student} - {self.attendance_type} - {self.timestamp}"
 
 class Attendance(models.Model):
     ATTENDANCE_TYPE_CHOICES = [

@@ -20,6 +20,10 @@ from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+
 
 @login_required
 @role_required(['admin', 'gatekeeper', 'registrar','teacher'])  # Allow these roles
@@ -270,27 +274,65 @@ def scan_nfc(request):
     return JsonResponse({'error': "Invalid request method."}, status=400)
 
 
+# def generate_attendance_report(filtered_students, attended_students):
+#     """
+#     Generate a CSV attendance report for the filtered students with a detailed header.
+#     """
+#     # Create a set of attended student IDs for faster lookup
+#     attended_student_ids = {attendance.student.id for attendance in attended_students}
+
+#     # Prepare data for the report
+#     report_data = []
+#     for student in filtered_students:
+#         report_data.append({
+#             'Student ID': student.student_id,
+#             'First Name': student.first_name,
+#             'Last Name': student.last_name,
+#             'Attendance Status': 'Attended' if student.id in attended_student_ids else 'Absent'
+#         })
+
+#     # Extract additional details for the header
+#     if attended_students:
+#         teacher = attended_students[0].teacher
+#         teacher_name = teacher.get_full_name() if teacher.get_full_name() else teacher.username
+#         attendance_type = attended_students[0].attendance_type
+#         date = attended_students[0].timestamp.strftime('%Y-%m-%d')
+#     else:
+#         teacher_name = "N/A"
+#         attendance_type = "N/A"
+#         date = "N/A"
+
+#     department = filtered_students[0].department.name if filtered_students else "N/A"
+#     student_class = filtered_students[0].student_class.name if filtered_students else "N/A"
+
+#     # Generate a CSV response
+#     response = HttpResponse(content_type='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
+
+#     # Write the header details
+#     response.write(f"Attendance Type: {attendance_type}\n")
+#     response.write(f"Department: {department}\n")
+#     response.write(f"Class: {student_class}\n")
+#     response.write(f"Date: {date}\n")
+#     response.write(f"Teacher: {teacher_name}\n\n")
+
+#     # Write the student attendance data
+#     df = pd.DataFrame(report_data)
+#     df.to_csv(path_or_buf=response, index=False)
+#     return response
+
 def generate_attendance_report(filtered_students, attended_students):
     """
-    Generate a CSV attendance report for the filtered students with a detailed header.
+    Generate a PDF attendance report for the filtered students with a detailed header.
     """
-    # Create a set of attended student IDs for faster lookup
+
+    # Create a set of attended student IDs
     attended_student_ids = {attendance.student.id for attendance in attended_students}
 
-    # Prepare data for the report
-    report_data = []
-    for student in filtered_students:
-        report_data.append({
-            'Student ID': student.student_id,
-            'First Name': student.first_name,
-            'Last Name': student.last_name,
-            'Attendance Status': 'Attended' if student.id in attended_student_ids else 'Absent'
-        })
-
-    # Extract additional details for the header
+    # Get teacher, date, and attendance type info (if available)
     if attended_students:
         teacher = attended_students[0].teacher
-        teacher_name = teacher.get_full_name() if teacher.get_full_name() else teacher.username
+        teacher_name = teacher.get_full_name() or teacher.username
         attendance_type = attended_students[0].attendance_type
         date = attended_students[0].timestamp.strftime('%Y-%m-%d')
     else:
@@ -301,21 +343,57 @@ def generate_attendance_report(filtered_students, attended_students):
     department = filtered_students[0].department.name if filtered_students else "N/A"
     student_class = filtered_students[0].student_class.name if filtered_students else "N/A"
 
-    # Generate a CSV response
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="attendance_report.csv"'
+    # Prepare PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="attendance_report.pdf"'
 
-    # Write the header details
-    response.write(f"Attendance Type: {attendance_type}\n")
-    response.write(f"Department: {department}\n")
-    response.write(f"Class: {student_class}\n")
-    response.write(f"Date: {date}\n")
-    response.write(f"Teacher: {teacher_name}\n\n")
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+    y = height - inch
 
-    # Write the student attendance data
-    df = pd.DataFrame(report_data)
-    df.to_csv(path_or_buf=response, index=False)
+    # Header section
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(100, y, "Attendance Report")
+    y -= 20
+
+    p.setFont("Helvetica", 11)
+    p.drawString(50, y, f"Attendance Type: {attendance_type}")
+    y -= 15
+    p.drawString(50, y, f"Department: {department}")
+    y -= 15
+    p.drawString(50, y, f"Class: {student_class}")
+    y -= 15
+    p.drawString(50, y, f"Date: {date}")
+    y -= 15
+    p.drawString(50, y, f"Teacher: {teacher_name}")
+    y -= 30
+
+    # Table headers
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(50, y, "Student ID")
+    p.drawString(150, y, "First Name")
+    p.drawString(250, y, "Last Name")
+    p.drawString(350, y, "Status")
+    y -= 20
+
+    # Student data
+    p.setFont("Helvetica", 10)
+    for student in filtered_students:
+        if y < 50:  # Create new page if running out of space
+            p.showPage()
+            y = height - inch
+        status = "Attended" if student.id in attended_student_ids else "Absent"
+        p.drawString(50, y, str(student.student_id))
+        p.drawString(150, y, student.first_name)
+        p.drawString(250, y, student.last_name)
+        p.drawString(350, y, status)
+        y -= 15
+
+    p.showPage()
+    p.save()
+
     return response
+
 
 @login_required
 @role_required(['gatekeeper'])
