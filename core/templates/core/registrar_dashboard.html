@@ -1,80 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        .dashboard-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .button-group {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-        }
-        button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .logout-btn {
-            background-color: #f44336;
-        }
-        .logout-btn:hover {
-            background-color: #d32f2f;
-        }
-        .registration-form {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        <h1>Registrar Dashboard</h1>
-        <p>Welcome, {{ user.username }}!</p>
+{% extends 'core/base.html' %}
 
-        <div class="button-group">
-            <!-- Button to navigate to the Registered Students Page -->
-            <a href="{% url 'registered-students' %}">
-                <button>View Registered Students</button>
-            </a>
+{% block title %}Registrar Dashboard{% endblock %}
 
-            <!-- Logout Button -->
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-user-edit me-2"></i>Registrar Dashboard</h2>
+            </div>
+            <div class="card-body">
+                {% if registration_success %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>Thank you for registering {{ registration_success }}!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                
+                <p class="lead">Welcome, {{ user.username }}!</p>
+                
+                <div class="d-flex gap-3 mb-4">
+                    <a href="{% url 'registered-students' %}" class="btn btn-primary">
+                        <i class="fas fa-users me-2"></i>View Registered Students
+                    </a>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#registerStudentModal">
+                        <i class="fas fa-user-plus me-2"></i>Register New Student
+                    </button>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
+    </div>
+</div>
 
-        <!-- Register New Student -->
-        <div class="registration-form">
-            <h2>Register New Student</h2>
-            <form method="post" enctype="multipart/form-data">
+<!-- Register Student Modal -->
+<div class="modal fade" id="registerStudentModal" tabindex="-1" aria-labelledby="registerStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" enctype="multipart/form-data" action="{% url 'register-student' %}">
                 {% csrf_token %}
-                {{ registration_form.as_p }}
-                <button type="submit" name="register_student">Register Student</button>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="registerStudentModalLabel">
+                        <i class="fas fa-user-plus me-2"></i>Register New Student
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        {% for field in registration_form %}
+                            <div class="col-md-6">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Register Student
+                    </button>
+                </div>
             </form>
         </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

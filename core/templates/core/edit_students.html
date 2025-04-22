@@ -1,83 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Edit Student Class</title>
-    <style>
-        /* Your existing styles here */
-    </style>
-</head>
-<body>
-    <h1>Bulk Edit Student Class</h1>
+{% extends 'core/base.html' %}
 
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+{% block title %}Bulk Edit Student Class{% endblock %}
 
-    <form method="post">
-        {% csrf_token %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-users-cog me-2"></i>Bulk Edit Student Class</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="student_class" class="form-label"><strong>Assign Selected Students to New Class:</strong></label>
+                            <select name="student_class" id="student_class" class="form-select" required>
+                                <option value="">Select a Class</option>
+                                {% regroup classes by department as department_list %}
+                                {% for department in department_list %}
+                                    <optgroup label="{{ department.grouper }}">
+                                        {% for class_obj in department.list %}
+                                            <option value="{{ class_obj.id }}">{{ class_obj.name }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
 
-        <div>
-            <label for="student_class"><strong>Assign Selected Students to New Class:</strong></label><br>
-            <select name="student_class" id="student_class" required>
-                <option value="">Select a Class</option>
-                {% regroup classes by department as department_list %}
-                {% for department in department_list %}
-                    
-                        {% for class_obj in department.list %}
-                            <option value="{{ class_obj.id }}">{{ class_obj.name }}</option>
-                        {% endfor %}
-                    
-                {% endfor %}
-            </select>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label" for="select-all">Select/Deselect All</label>
+                    </div>
+
+                    <h3 class="mb-3">Students to Update ({{ students.count }})</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Current Department</th>
+                                    <th>Current Class</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input" name="selected_students" value="{{ student.id }}" checked></td>
+                                    <td>{{ student.student_id }}</td>
+                                    <td>{{ student.first_name }} {{ student.last_name }}</td>
+                                    <td>{{ student.department.name|default:"N/A" }}</td>
+                                    <td>{{ student.student_class.name|default:"N/A" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No students found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Selected Students' Class
+                        </button>
+                        <a href="{% url 'registered-students' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Registered Students
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
+    </div>
+</div>
 
-        <!-- Rest of your template remains the same -->
-        <div class="select-all">
-            <input type="checkbox" id="select-all">
-            <label for="select-all">Select/Deselect All</label>
-        </div>
-
-        <h2>Students to Update ({{ students.count }})</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>Student ID</th>
-                    <th>Name</th>
-                    <th>Current Department</th>
-                    <th>Current Class</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for student in students %}
-                <tr>
-                    <td><input type="checkbox" name="selected_students" value="{{ student.id }}" checked></td>
-                    <td>{{ student.student_id }}</td>
-                    <td>{{ student.first_name }} {{ student.last_name }}</td>
-                    <td>{{ student.department.name|default:"N/A" }}</td>
-                    <td>{{ student.student_class.name|default:"N/A" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">No students found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <button type="submit">Update Selected Students' Class</button>
-    </form>
-
-    <a href="{% url 'registered-students' %}">← Back to Registered Students</a>
-
-    <script>
-        // Your existing JavaScript here
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all functionality
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('input[name="selected_students"]');
+    
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

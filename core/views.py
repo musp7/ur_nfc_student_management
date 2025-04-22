@@ -512,22 +512,16 @@ def registered_students(request):
 @login_required
 @role_required(['registrar'])
 def register_student(request):
-    """
-    View to register a new student and automatically assign an NFC URL.
-    """
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            student = form.save(commit=False)  # Do not save to the database yet
-            # Generate the NFC URL
-            student.nfc_url = f"{request.scheme}://{request.get_host()}{reverse('student-profile', args=[student.student_id])}"
-            student.save()  # Save the student to the database
-            return redirect('registered-students')  # Redirect to the registered students page
+            student = form.save()
+            messages.success(request, f'Thank you for registering {student.first_name} {student.last_name}!')
+            return redirect('registrar-dashboard')
     else:
         form = StudentRegistrationForm()
-
+    
     return render(request, 'core/register_student.html', {'form': form})
-
 
 @login_required
 @role_required(['registrar'])

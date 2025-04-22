@@ -1,30 +1,67 @@
-<!-- filepath: core/templates/core/finance_student_detail.html -->
+{% extends 'core/base.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Details</title>
-</head>
-<body>
-    <h1>Student Details</h1>
-    <p><strong>Student ID:</strong> {{ student.student_id }}</p>
-    <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
-    <p><strong>Gender:</strong> {{ student.gender }}</p>
-    <p><strong>Class:</strong> {{ student.student_class }}</p>
-    <p><strong>Department:</strong> {{ student.department }}</p>
-    <p><strong>School:</strong> {{ student.school }}</p>
-    <p><strong>College:</strong> {{ student.college }}</p>
-    <p><strong>Campus:</strong> {{ student.campus }}</p>
+{% block title %}Student Details{% endblock %}
 
-    <h2>Update Payment Status</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Update Payment Status</button>
-    </form>
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-user-graduate me-2"></i>Student Details</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-4 text-center">
+                        {% if student.photo %}
+                            <img src="{{ student.photo.url }}" alt="Student Photo" class="img-thumbnail mb-3" style="max-width: 200px;">
+                        {% else %}
+                            <div class="bg-light p-5 mb-3 text-center">
+                                <i class="fas fa-user-graduate fa-5x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+                        <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+                        <p><strong>Gender:</strong> {{ student.gender }}</p>
+                        <p><strong>Class:</strong> {{ student.student_class }}</p>
+                        <p><strong>Department:</strong> {{ student.department }}</p>
+                    </div>
+                </div>
 
-    <a href="{% url 'finance-dashboard' %}">Back to Dashboard</a>
-</body>
-</html>
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-money-bill-wave me-2"></i>Update Payment Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                {% for field in form %}
+                                    <div class="col-md-6">
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                        {% if field.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ field.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Update Payment Status
+                                    </button>
+                                    <a href="{% url 'finance-dashboard' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,15 +3,35 @@
 {% block title %}Student Profile{% endblock %}
 
 {% block content %}
-    <h1>Student Profile</h1>
-    <p><strong>Student ID:</strong> {{ student.student_id }}</p>
-    <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
-    <p><strong>Campus:</strong> {{ student.campus.name }}</p>
-    <p><strong>College:</strong> {{ student.college.name }}</p>
-    <p><strong>School:</strong> {{ student.school.name }}</p>
-    <p><strong>Department:</strong> {{ student.department.name }}</p>
-    <p><strong>Class:</strong> {{ student.student_class.name }}</p>
-    {% if student.photo %}
-        <img src="{{ student.photo.url }}" alt="Student Photo" style="width: 150px; height: 150px;">
-    {% endif %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-user-graduate me-2"></i>Student Profile</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        {% if student.photo %}
+                            <img src="{{ student.photo.url }}" alt="Student Photo" class="img-thumbnail mb-3" style="max-width: 200px;">
+                        {% else %}
+                            <div class="bg-light p-5 mb-3 text-center">
+                                <i class="fas fa-user-graduate fa-5x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+                        <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+                        <p><strong>Campus:</strong> {{ student.campus.name }}</p>
+                        <p><strong>College:</strong> {{ student.college.name }}</p>
+                        <p><strong>School:</strong> {{ student.school.name }}</p>
+                        <p><strong>Department:</strong> {{ student.department.name }}</p>
+                        <p><strong>Class:</strong> {{ student.student_class.name }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

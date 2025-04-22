@@ -1,23 +1,23 @@
-<!-- filepath: core/templates/core/gatekeeper_dashboard.html -->
+{% extends 'core/base.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gatekeeper Dashboard</title>
-</head>
-<body>
-    <h1>Gatekeeper Dashboard</h1>
-    <p>Welcome, {{ user.username }}!</p>
-    <ul>
-        <li><a href="{% url 'scan-card' %}">Scan NFC Card</a></li>
-        <li>
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-        </li>
-    </ul>
-</body>
-</html>
+{% block title %}Gatekeeper Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-shield-alt me-2"></i>Gatekeeper Dashboard</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">Welcome, {{ user.username }}!</p>
+                <div class="d-grid gap-3">
+                    <a href="{% url 'scan-card' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-qrcode me-2"></i>Scan NFC Card
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
