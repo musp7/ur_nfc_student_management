@@ -1,23 +1,248 @@
 {% extends 'core/base.html' %}
-
-{% block title %}Gatekeeper Dashboard{% endblock %}
+{% load static %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-shield-alt me-2"></i>Gatekeeper Dashboard</h2>
-            </div>
-            <div class="card-body">
-                <p class="lead">Welcome, {{ user.username }}!</p>
-                <div class="d-grid gap-3">
-                    <a href="{% url 'scan-card' %}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-qrcode me-2"></i>Scan NFC Card
-                    </a>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                {% if selected_date == timezone_now.date %}
+                                    Today's Logs
+                                {% else %}
+                                    Attendance for {{ selected_date|date:"F j, Y" }}
+                                {% endif %}
+                            </h2>
+                            <p class="text-muted mb-0">Student entry and exit records</p>
+                        </div>
+                        <div class="d-flex">
+                            <form method="get" class="me-3" id="filter-form">
+                                <div class="input-group">
+                                    <input type="date" name="date" class="form-control" 
+                                           value="{{ selected_date|date:'Y-m-d' }}">
+                                    
+                                    <select name="department" class="form-select" id="department-select">
+                                        <option value="">All Departments</option>
+                                        {% for dept in departments %}
+                                            <option value="{{ dept.id }}" 
+                                                {% if selected_department == dept.id %}selected{% endif %}>
+                                                {{ dept.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                    <select name="class" class="form-select" id="class-select" 
+                                        {% if not selected_department %}disabled{% endif %}>
+                                        <option value="">All Classes</option>
+                                        {% for cls in classes %}
+                                            <option value="{{ cls.id }}" 
+                                                {% if selected_class == cls.id %}selected{% endif %}>
+                                                {{ cls.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-funnel"></i> Filter
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <a href="{% url 'export-entries' %}?date={{ selected_date|date:'Y-m-d' }}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_class %}&class={{ selected_class }}{% endif %}" 
+                               class="btn btn-success">
+                                <i class="bi bi-file-earmark-pdf"></i> Export
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Total Entries</h6>
+                            <h2 class="mb-0">{{ total_entries }}</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-clipboard-data fs-1 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-success border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Currently in School</h6>
+                            <h2 class="mb-0">{{ current_in_school }}</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-person-check fs-1 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Checked Out</h6>
+                            <h2 class="mb-0">
+                                {% widthratio total_entries|default:1 current_in_sales|default:1 1 as ratio %}
+                                {{ ratio }}
+                            </h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-box-arrow-right fs-1 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Current Date</h6>
+                            <h2 class="mb-0">{{ timezone_now|date:"M j" }}</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-clock fs-1 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entries Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i> Student Records</h5>
+            <a href="{% url 'scan-card' %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Scan New Card
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Full Name</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                        <tr>
+                            <td>{{ entry.student.student_id }}</td>
+                            <td>
+                                {{ entry.student.first_name }} 
+                                {{ entry.student.last_name }} 
+                            </td>
+                            <td>{{ entry.entry_time|time:"H:i" }}</td>
+                            <td>
+                                {% if entry.exit_time %}
+                                    {{ entry.exit_time|time:"H:i" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                {% if entry.exit_time %}
+                                    <span class="badge bg-success">Checked Out</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Present</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="bi bi-exclamation-circle fs-4 d-block mb-2"></i>
+                               Choose a current date!!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date picker
+        const dateInput = document.querySelector('input[type="date"]');
+        if (!dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+    
+        // Get DOM elements
+        const departmentSelect = document.getElementById('department-select');
+        const classSelect = document.getElementById('class-select');
+        const filterForm = document.getElementById('filter-form');
+    
+        // Function to fetch classes for a department
+        async function fetchClasses(departmentId) {
+            if (!departmentId) {
+                classSelect.innerHTML = '<option value="">All Classes</option>';
+                classSelect.disabled = true;
+                return;
+            }
+    
+            try {
+                const response = await fetch(`/api/classes/?department=${departmentId}`);
+                const classes = await response.json();
+                
+                classSelect.innerHTML = '<option value="">All Classes</option>';
+                classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.id;
+                    option.textContent = cls.name;
+                    classSelect.appendChild(option);
+                });
+                
+                classSelect.disabled = false;
+            } catch (error) {
+                console.error('Error fetching classes:', error);
+            }
+        }
+    
+        // Handle department change
+        departmentSelect.addEventListener('change', function() {
+            fetchClasses(this.value);
+        });
+    
+        // Initialize classes dropdown based on selected department
+        if (departmentSelect.value) {
+            fetchClasses(departmentSelect.value);
+        }
+    });
+    </script>
 {% endblock %}

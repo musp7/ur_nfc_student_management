@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
         ('registrar', 'Registrar'),
         ('finance', 'Finance'),
     )
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='gatekeeper')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='')
 
     def __str__(self):
         return f"{self.username} ({self.role})"

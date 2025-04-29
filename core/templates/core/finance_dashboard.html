@@ -6,33 +6,114 @@
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h2><i class="fas fa-money-bill-wave me-2"></i>Finance Dashboard</h2>
+                <div>
+                    <button id="generateReportBtn" class="btn btn-light">
+                        <i class="fas fa-file-pdf me-2"></i>Generate Report
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <p class="lead">Welcome, {{ user.username }}!</p>
                 
-                <form method="get" class="mb-4">
+                <!-- Filter Form -->
+                <form method="get" class="mb-4" id="financeFilterForm">
                     <div class="row g-3">
-                        {% for field in form %}
-                            <div class="col-md-4">
-                                {{ field.label_tag }}
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ field.errors }}
-                                    </div>
+                        <!-- Payment Status -->
+                        <div class="col-md-4">
+                            <label for="id_payment_status" class="form-label">Payment Status</label>
+                            <select name="payment_status" id="id_payment_status" class="form-select">
+                                <option value="">All</option>
+                                {% for value, label in form.payment_status.field.choices %}
+                                    <option value="{{ value }}" 
+                                        {% if request.GET.payment_status == value|stringformat:"s" %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Department -->
+                        <div class="col-md-4">
+                            <label for="id_department" class="form-label">Department</label>
+                            <select name="department" id="id_department" class="form-select">
+                                <option value="">---------</option>
+                                {% for dept in form.fields.department.queryset %}
+                                    <option value="{{ dept.id }}"
+                                        {% if request.GET.department == dept.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ dept.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Class - Dynamically populated -->
+                        <div class="col-md-4">
+                            <label for="id_student_class" class="form-label">Class</label>
+                            <select name="student_class" id="id_student_class" class="form-select">
+                                <option value="">---------</option>
+                                {% if request.GET.department %}
+                                    <!-- Show only classes for selected department -->
+                                    {% for cls in classes_for_selected_department %}
+                                        <option value="{{ cls.id }}"
+                                            {% if request.GET.student_class == cls.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ cls.name }}
+                                        </option>
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- Show all classes if no department selected -->
+                                    {% for cls in all_classes %}
+                                        <option value="{{ cls.id }}"
+                                            {% if request.GET.student_class == cls.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ cls.name }}
+                                        </option>
+                                    {% endfor %}
                                 {% endif %}
-                            </div>
-                        {% endfor %}
+                            </select>
+                        </div>
+                        
                         <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-filter me-2"></i>Filter
                             </button>
                         </div>
                     </div>
                 </form>
 
+                <!-- Report Type Selection (hidden by default) -->
+                <div id="reportOptions" class="mb-4 p-3 border rounded" style="display: none;">
+                    <h5 class="mb-3"><i class="fas fa-cog me-2"></i>Report Options</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportType" id="unpaidReport" value="unpaid" checked>
+                                <label class="form-check-label" for="unpaidReport">
+                                    Unpaid Students Only
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportType" id="paidReport" value="paid">
+                                <label class="form-check-label" for="paidReport">
+                                    Paid Students Only
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportType" id="allReport" value="">
+                                <label class="form-check-label" for="allReport">
+                                    All Students
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <button id="generatePdfBtn" class="btn btn-success">
+                                <i class="fas fa-file-export me-2"></i>Generate PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
@@ -75,4 +156,90 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Function to load classes based on selected department
+    function loadClasses(departmentId) {
+        const classSelect = $('#id_student_class');
+        classSelect.html('<option value="">---------</option>');
+        
+        if (departmentId) {
+            // Fetch classes for selected department
+            $.ajax({
+                url: '{% url "load_classes" %}',
+                data: {
+                    'department_id': departmentId
+                },
+                success: function(data) {
+                    $.each(data, function(index, cls) {
+                        const option = $('<option></option>')
+                            .attr('value', cls.id)
+                            .text(cls.name);
+                        
+                        // Preselect if this was the previously selected class
+                        if ('{{ request.GET.student_class }}' == cls.id.toString()) {
+                            option.attr('selected', 'selected');
+                        }
+                        
+                        classSelect.append(option);
+                    });
+                }
+            });
+        }
+    }
+
+    // Handle department change
+    $('#id_department').change(function() {
+        const departmentId = $(this).val();
+        loadClasses(departmentId);
+    });
+
+    // Initialize on page load if department is selected
+    if ($('#id_department').val()) {
+        loadClasses($('#id_department').val());
+    }
+
+    // Report generation functionality
+    $('#generateReportBtn').click(function(e) {
+        e.preventDefault();
+        $('#reportOptions').slideToggle();
+    });
+
+    $('#generatePdfBtn').click(function(e) {
+        e.preventDefault();
+        
+        // Get current filter values
+        const paymentStatus = $('#id_payment_status').val();
+        const department = $('#id_department').val();
+        const studentClass = $('#id_student_class').val();
+        
+        // Get selected report type
+        const reportType = $('input[name="reportType"]:checked').val();
+        
+        // Build the report URL
+        let reportUrl = '{% url "generate-payment-report" %}?';
+        
+        if (reportType) {
+            reportUrl += `payment_status=${reportType}&`;
+        }
+        
+        if (department) {
+            reportUrl += `department=${department}&`;
+        }
+        
+        if (studentClass) {
+            reportUrl += `student_class=${studentClass}`;
+        }
+        
+        // Open the report in a new tab
+        window.open(reportUrl, '_blank');
+        
+        // Hide the options panel
+        $('#reportOptions').slideUp();
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

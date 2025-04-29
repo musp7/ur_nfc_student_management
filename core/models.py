@@ -3,12 +3,16 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils.timezone import now
 
+from accounts.models import CustomUser
+
 
 class Campus(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
+    class Meta:
+        verbose_name_plural = "Campuses"
 
 
 class College(models.Model):
@@ -132,10 +136,17 @@ class Student(models.Model):
     def generate_nfc_url(self, request):
         """
         Generate the full NFC URL dynamically based on the request's host.
+        Includes the current attendance type if available.
         """
         scheme = request.scheme  # 'http' or 'https'
         host = request.get_host()  # e.g., '127.0.0.1:8000' or 'example.com'
-        return f"{scheme}://{host}{reverse('student-profile', args=[self.student_id])}"
+        base_url = f"{scheme}://{host}{reverse('student-profile', args=[self.student_id])}"
+        
+        # Get attendance type from session if available
+        attendance_type = request.session.get('attendance_type')
+        if attendance_type:
+            return f"{base_url}?attendance_type={attendance_type}"
+        return base_url
 
     def save(self, *args, **kwargs):
         # If `request` is passed in kwargs, use it to generate the NFC URL
@@ -146,6 +157,28 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.student_id})"
+    def get_exam_status(self, teacher):
+        """
+        Returns the exam status for this student with the given teacher.
+        """
+        start_record = Attendance.objects.filter(
+            student=self,
+            teacher=teacher,
+            attendance_type='EXAM_START'
+        ).first()
+        
+        end_record = Attendance.objects.filter(
+            student=self,
+            teacher=teacher,
+            attendance_type='EXAM_END'
+        ).first()
+        
+        if not start_record:
+            return "Not started"
+        elif start_record and not end_record:
+            return f"Started at {start_record.timestamp.time()}"
+        else:
+            return f"Submitted at {end_record.timestamp.time()}"
     
 
 
@@ -166,3 +199,21 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.attendance_type} - {self.timestamp}"
+    
+# core/models.py
+from django.utils import timezone
+
+class StudentEntry(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    entry_time = models.DateTimeField(auto_now_add=True)
+    exit_time = models.DateTimeField(null=True, blank=True)
+    gatekeeper = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    
+    class Meta:
+        verbose_name_plural = "Student Entries"
+        ordering = ['-entry_time']
+        
+    def __str__(self):
+        return f"{self.student} - {self.entry_time}"
+    
+

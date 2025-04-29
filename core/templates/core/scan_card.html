@@ -1,51 +1,41 @@
+<!-- core/templates/core/scan_card.html -->
 {% extends 'core/base.html' %}
 
 {% block title %}Scan NFC Card{% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-md-8 mx-auto">
+    <div class="col-md-6 mx-auto">
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-qrcode me-2"></i>Scan NFC Card</h2>
             </div>
-            <div class="card-body">
-                {% if student %}
-                    <div class="alert alert-success">
-                        <h4>Student Profile</h4>
-                        <div class="row">
-                            <div class="col-md-4 text-center">
-                                {% if student.photo %}
-                                    <img src="{{ student.photo.url }}" alt="Student Photo" class="img-thumbnail mb-3" style="max-width: 200px;">
-                                {% else %}
-                                    <div class="bg-light p-5 mb-3 text-center">
-                                        <i class="fas fa-user-graduate fa-5x text-muted"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-8">
-                                <p><strong>Student ID:</strong> {{ student.student_id }}</p>
-                                <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
-                                <p><strong>Class:</strong> {{ student.student_class }}</p>
-                                <p><strong>Department:</strong> {{ student.department }}</p>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <form method="post" class="text-center">
-                        {% csrf_token %}
-                        {% if error %}
+            <div class="card-body text-center">
+                <form method="post">
+                    {% csrf_token %}
+                    {% if error %}
                         <p style="color: red;">{{ error }}</p>
                         {% endif %}
+                    <div class="mb-4">
+                        <i class="fas fa-id-card fa-5x text-primary mb-3"></i>
+                        <p class="lead">Please scan student's NFC card</p>
+                    </div>
+                    
+                    <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-qrcode me-2"></i>Scan NFC Card
+                            <i class="fas fa-camera me-2"></i> Simulate Scan
                         </button>
-                    </form>
-                {% endif %}
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">Or enter student ID manually:</small>
+                        <input type="text" name="student_id" class="form-control mt-1" placeholder="Student ID">
+                    </div>
+                </form>
                 
                 <div class="mt-4">
                     <a href="{% url 'gatekeeper-dashboard' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
                     </a>
                 </div>
             </div>

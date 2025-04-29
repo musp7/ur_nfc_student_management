@@ -5,12 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Student Management System{% endblock %}</title>
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Bootstrap 5 CSS -->
+
     <style>
         :root {
             --ur-primary: #003366;
@@ -55,6 +56,96 @@
             margin-right: 0.5rem;
             color: var(--ur-primary);
         }
+
+        /* About Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            color: #333;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #6c757d;
+        }
+        
+        .team-member {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .team-member img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1.5rem;
+        }
+        
+        .about-link {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .about-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        /* Feature list styles */
+        .feature-list {
+            padding-left: 0;
+            list-style-type: none;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-list i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+            min-width: 1.5em;
+            text-align: center;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -65,7 +156,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="{% url 'landing-page' %}">
-                <i class="fas fa-university me-2"></i>SMS
+                <i class="fas fa-university me-2"></i>SSMS
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -148,8 +239,6 @@
                                 </li>
                             </ul>
                         </li>
-                        <!-- Standard login link (hidden on mobile) -->
-                        
                     {% endif %}
                 </ul>
             </div>
@@ -175,20 +264,209 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <p class="mb-0 small">&copy; {% now "Y" %} University of Rwanda</p>
+                    <p class="mb-0 small">&copy; {% now "Y" %} SSMS</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="mb-0 small">NFC Student Management System</p>
+                    <p class="mb-0 small">
+                        Smart Student Management System | 
+                        <span class="about-link" id="aboutBtn">
+                            <i class="fas fa-info-circle me-1"></i>About Us
+                        </span>
+                    </p>
                 </div>
             </div>
         </div>
     </footer>
+
+    <!-- About Us Modal -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <h2 class="mb-4" style="color: var(--ur-primary);">About Us</h2>
+            
+            <div class="mb-4">
+                
+                <p>The NFC Student Management System is a Django-based web application developed to optimize student administration processes through role-specific functionalities for Registrars, Gatekeepers, Teachers, and Finance Staff. By integrating Near Field Communication (NFC) technology, the system facilitates efficient attendance tracking and comprehensive student profile management.
+                    This project represents the original work of a team of three undergraduate students, undertaken in partial fulfillment of the requirements for the degree of Bachelor of Science with Honors in Information Technology for the academic year 2024–2025.
+                    </p>
+            </div>
+            
+           
+            
+            <div class="mb-4">
+                <h4 class="mb-3">Project Contributors:</h4>
+                <div class="team-member">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_w4FVSpWbIrBsVwT4CjpITNbcqhwyL8d7Ag&s" alt="Peter TUGIRUMUREMYI">
+                    <div>
+                        <h5>Tugirumuremyi Peter</h5>
+                        <h8>220010933</h8>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <img src="https://scontent.febb6-1.fna.fbcdn.net/v/t39.30808-6/446907155_7680477462042933_1570244697578726192_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_ohc=bk_HrC494isQ7kNvwFOsIvc&_nc_oc=Admi0eIPiyuQS2WfhnxMRMCglrOb5lkOrLVA3lTYKQgB_BbaCOJ-eBQzhSKMx8HKpDo&_nc_zt=23&_nc_ht=scontent.febb6-1.fna&_nc_gid=HwajTmnrE3IeMFttG-NL-Q&oh=00_AfGiYEPKZosQTwDFTV-atOJZc2BkaMSt2ltDCdu9ssFB1w&oe=68167119" alt="Peter MUSIRIKARE">
+                    <div>
+                        <h5>Musirikare Peter	</h5>
+                        <h8>221002205</h8>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <img src="https://scontent.febb6-1.fna.fbcdn.net/v/t39.30808-6/493536619_2486316255061513_8024967064595113800_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=tGNX4bh9xQoQ7kNvwGQwy-M&_nc_oc=AdnVnuwDnUbLRnosF94eg8GQy2WwjXILmn1kLTl1AMUV4e1ebTNt0y7paLKt8mJ4bHo&_nc_zt=23&_nc_ht=scontent.febb6-1.fna&_nc_gid=pVKO_10MvSdQSJhycYyBpA&oh=00_AfFlBaSSVurB15qqZt0OneDwQME8hMdtpRpY5DSvc-aSlA&oe=68167922" alt="Protais NIRERE">
+                    <div>
+                        <h5>Nirere Protais	</h5>
+                        <h8>221005020</h8>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h4 class="mb-3">Institution</h4>
+                <p> University of Rwanda<br>
+                    Nyarugenge Campus<br>
+                    College of Science and Technology (CST)<br>
+                    School of Information and Communication Technology<br>
+                    Department of Information technology
+                    
+                    </p>
+                
+            </div>
+
+        
+            
+            <div>
+                <h4 class="mb-3">Contact Us</h4>
+                <p><i class="fas fa-envelope me-2"></i>tugire.peter@gmail.com || musirp3@gmail.com || nirereprotais@gmail.com </p>
+                <p><i class="fas fa-phone me-2"></i> +250 782 580 213 || +250 789 915 202 || +250 788 945 559 </p>
+            </div>
+        </div>
+    </div>
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    <script>
+    $(document).ready(function() {
+        // Campus -> College
+        $('#id_campus').change(function() {
+            var campusId = $(this).val();
+            if (campusId) {
+                $.ajax({
+                    url: "{% url 'ajax_load_colleges' %}",
+                    data: {
+                        'campus_id': campusId
+                    },
+                    success: function(data) {
+                        $('#id_college').html(data);
+                        $('#id_school').html('<option value="">---------</option>');
+                        $('#id_department').html('<option value="">---------</option>');
+                        $('#id_student_class').html('<option value="">---------</option>');
+                    }
+                });
+            } else {
+                $('#id_college').html('<option value="">---------</option>');
+                $('#id_school').html('<option value="">---------</option>');
+                $('#id_department').html('<option value="">---------</option>');
+                $('#id_student_class').html('<option value="">---------</option>');
+            }
+        });
+
+        // College -> School
+        $('#id_college').change(function() {
+            var collegeId = $(this).val();
+            if (collegeId) {
+                $.ajax({
+                    url: "{% url 'ajax_load_schools' %}",
+                    data: {
+                        'college_id': collegeId
+                    },
+                    success: function(data) {
+                        $('#id_school').html(data);
+                        $('#id_department').html('<option value="">---------</option>');
+                        $('#id_student_class').html('<option value="">---------</option>');
+                    }
+                });
+            } else {
+                $('#id_school').html('<option value="">---------</option>');
+                $('#id_department').html('<option value="">---------</option>');
+                $('#id_student_class').html('<option value="">---------</option>');
+            }
+        });
+
+        // School -> Department
+        $('#id_school').change(function() {
+            var schoolId = $(this).val();
+            if (schoolId) {
+                $.ajax({
+                    url: "{% url 'ajax_load_departments' %}",
+                    data: {
+                        'school_id': schoolId
+                    },
+                    success: function(data) {
+                        $('#id_department').html(data);
+                        $('#id_student_class').html('<option value="">---------</option>');
+                    }
+                });
+            } else {
+                $('#id_department').html('<option value="">---------</option>');
+                $('#id_student_class').html('<option value="">---------</option>');
+            }
+        });
+
+        // Department -> Class
+        $('#id_department').change(function() {
+            var departmentId = $(this).val();
+            if (departmentId) {
+                $.ajax({
+                    url: "{% url 'ajax_load_classes' %}",
+                    data: {
+                        'department_id': departmentId
+                    },
+                    success: function(data) {
+                        $('#id_student_class').html(data);
+                    }
+                });
+            } else {
+                $('#id_student_class').html('<option value="">---------</option>');
+            }
+        });
+
+        // About Modal functionality - will work on all pages
+        const aboutBtn = document.getElementById('aboutBtn');
+        if (aboutBtn) {
+            const closeModal = document.getElementById('closeModal');
+            const aboutModal = document.getElementById('aboutModal');
+            
+            // Show modal
+            aboutBtn.addEventListener('click', function() {
+                aboutModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // Hide modal
+            closeModal.addEventListener('click', function() {
+                aboutModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            
+            // Hide modal when clicking outside content
+            aboutModal.addEventListener('click', function(e) {
+                if (e.target === aboutModal) {
+                    aboutModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && aboutModal.classList.contains('active')) {
+                    aboutModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+    });
+    </script>
+    {% endblock %}
 </body>
 </html>

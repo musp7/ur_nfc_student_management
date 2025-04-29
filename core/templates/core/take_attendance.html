@@ -26,44 +26,110 @@
                         {% endfor %}
                         <div class="col-md-4 d-flex align-items-end">
                             <button type="submit" name="filter_students" class="btn btn-primary">
-                                <i class="fas fa-filter me-2"></i>Filter
+                                <i class="fas fa-filter me-2"></i>Filter/ Refresh Students
                             </button>
                         </div>
                     </div>
                 </form>
 
                 {% if students %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% if attendance_type == 'CLASS' %}
+                            Scan student NFC cards to mark them as present for class.
+                        {% elif attendance_type == 'EXAM_START' %}
+                            Scan student NFC cards to record exam start time.
+                        {% elif attendance_type == 'EXAM_END' %}
+                            Scan student NFC cards to record exam submission time.
+                        {% endif %}
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-striped table-hover" id="attendanceTable">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Student ID</th>
                                     <th>Name</th>
                                     <th>Class</th>
                                     <th>Department</th>
-                                    
+                                    <th>Status</th>
+                                    {% if attendance_type == 'EXAM_START' or attendance_type == 'EXAM_END' %}
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for student in students %}
-                                    <tr>
+                                    <tr data-student-id="{{ student.student_id }}">
                                         <td>{{ student.student_id }}</td>
                                         <td>{{ student.first_name }} {{ student.last_name }}</td>
                                         <td>{{ student.student_class }}</td>
                                         <td>{{ student.department }}</td>
-                                        
+                                        <td class="status-cell">
+                                            {% if attendance_type == 'EXAM_START' %}
+                                                {% if student.has_started %}
+                                                    <span class="badge bg-success">Started</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Not Started</span>
+                                                {% endif %}
+                                            {% elif attendance_type == 'EXAM_END' %}
+                                                {% if student.has_finished %}
+                                                    <span class="badge bg-success">Submitted</span>
+                                                {% elif student.has_started %}
+                                                    <span class="badge bg-info">In Progress</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Not Started</span>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if student in attended_students %}
+                                                    <span class="badge bg-success">Present</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Absent</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        {% if attendance_type == 'EXAM_START' or attendance_type == 'EXAM_END' %}
+                                            <td class="start-time-cell">
+                                                {% if student.exam_start_time %}
+                                                    {{ student.exam_start_time|time:"H:i" }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="end-time-cell">
+                                                {% if student.exam_end_time %}
+                                                    {{ student.exam_end_time|time:"H:i" }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
 
-                    <form method="post" class="mt-3">
-                        {% csrf_token %}
-                        <button type="submit" name="end_attendance" class="btn btn-success">
-                            <i class="fas fa-file-export me-2"></i>End Attendance and Download Report
-                        </button>
-                    </form>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="end_attendance" class="btn btn-success">
+                                <i class="fas fa-file-export me-2"></i>Generate Report
+                            </button>
+                        </form>
+                        
+                        <form method="post" action="{% url 'reset-attendance' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning" id="resetButton">
+                                <i class="fas fa-redo me-2"></i>Reset Attendance
+                            </button>
+                        </form>
+                        
+                        <a href="{% url 'teacher-dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
                 {% else %}
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>No students found. Please apply filters to view students.
@@ -77,55 +143,141 @@
 {% block extra_js %}
 <script>
 $(document).ready(function() {
-    // Handle NFC card scanning
-    $(document).on('keydown', function(event) {
-        const scannedStudentId = event.key; // Replace with actual NFC input logic
+    // Load classes when department changes
+    $("#id_department").change(function() {
+        const departmentId = $(this).val();
+        const levelSelect = $("#id_level");
+        
+        if (departmentId) {
+            $.ajax({
+                url: "{% url 'load_classes' %}",
+                data: {
+                    'department_id': departmentId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                beforeSend: function() {
+                    levelSelect.html('<option value="">Loading...</option>');
+                },
+                success: function(data) {
+                    levelSelect.empty();
+                    if (data.length > 0) {
+                        levelSelect.append('<option value="">Select Class</option>');
+                        $.each(data, function(key, value) {
+                            levelSelect.append($('<option>', {
+                                value: value.id,
+                                text: value.name
+                            }));
+                        });
+                    } else {
+                        levelSelect.append('<option value="">No classes found</option>');
+                    }
+                },
+                error: function() {
+                    levelSelect.html('<option value="">Error loading classes</option>');
+                }
+            });
+        } else {
+            levelSelect.html('<option value="">Select Department First</option>');
+        }
+    });
 
-        // Send the scanned student ID to the backend
+    // NFC card scanning functionality
+    let nfcInput = '';
+    let nfcTimeout;
+    
+    $(document).on('keypress', function(e) {
+        nfcInput += String.fromCharCode(e.which);
+        
+        if (nfcTimeout) clearTimeout(nfcTimeout);
+        
+        nfcTimeout = setTimeout(function() {
+            if (nfcInput.length >= 8) {
+                processNfcScan(nfcInput.trim());
+            }
+            nfcInput = '';
+        }, 100);
+    });
+
+    function processNfcScan(studentId) {
+        showToast('Scanning student ' + studentId + '...', 'info');
+        
         $.ajax({
             url: "{% url 'scan-nfc' %}",
             method: "POST",
             data: {
-                'student_id': scannedStudentId,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                'student_id': studentId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                'attendance_type': "{{ attendance_type }}"
             },
             success: function(response) {
-                // Show toast notification
-                const toast = `<div class="toast show position-fixed bottom-0 end-0 m-3" role="alert">
-                    <div class="toast-header bg-success text-white">
-                        <strong class="me-auto">Success</strong>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">
-                        ${response.message}
-                    </div>
-                </div>`;
-                $('body').append(toast);
-                
-                // Remove toast after 3 seconds
-                setTimeout(() => {
-                    $('.toast').remove();
-                }, 3000);
+                updateStudentRow(response.student);
+                showToast(response.message, 'success');
             },
             error: function(xhr) {
-                // Show error toast
-                const toast = `<div class="toast show position-fixed bottom-0 end-0 m-3" role="alert">
-                    <div class="toast-header bg-danger text-white">
-                        <strong class="me-auto">Error</strong>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">
-                        ${xhr.responseText}
-                    </div>
-                </div>`;
-                $('body').append(toast);
-                
-                // Remove toast after 5 seconds
-                setTimeout(() => {
-                    $('.toast').remove();
-                }, 5000);
+                showToast(xhr.responseJSON.error || 'Error processing card', 'danger');
             }
         });
+    }
+
+    function updateStudentRow(studentData) {
+        const row = $(`tr[data-student-id="${studentData.student_id}"]`);
+        
+        if (row.length) {
+            // Update status cell
+            let statusBadge = '';
+            if ("{{ attendance_type }}" === 'CLASS') {
+                statusBadge = studentData.present ? 
+                    '<span class="badge bg-success">Present</span>' : 
+                    '<span class="badge bg-warning">Absent</span>';
+            } 
+            else if ("{{ attendance_type }}" === 'EXAM_START') {
+                statusBadge = studentData.has_started ? 
+                    '<span class="badge bg-success">Started</span>' : 
+                    '<span class="badge bg-warning">Not Started</span>';
+            } 
+            else if ("{{ attendance_type }}" === 'EXAM_END') {
+                if (studentData.has_finished) {
+                    statusBadge = '<span class="badge bg-success">Submitted</span>';
+                } else if (studentData.has_started) {
+                    statusBadge = '<span class="badge bg-info">In Progress</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-warning">Not Started</span>';
+                }
+            }
+            
+            row.find('.status-cell').html(statusBadge);
+            
+            // Update exam times if applicable
+            if (studentData.exam_start_time) {
+                row.find('.start-time-cell').text(studentData.exam_start_time);
+            }
+            if (studentData.exam_end_time) {
+                row.find('.end-time-cell').text(studentData.exam_end_time);
+            }
+        }
+    }
+
+    function showToast(message, type) {
+        const toast = $(`
+            <div class="toast show position-fixed bottom-0 end-0 m-3" role="alert">
+                <div class="toast-header bg-${type} text-white">
+                    <strong class="me-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `);
+        
+        $('body').append(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    $('#resetButton').click(function(e) {
+        if (!confirm('Attention! Are you sure you want to reset all attendance data? This action cannot be undone.')) {
+            e.preventDefault();
+        }
     });
 });
 </script>

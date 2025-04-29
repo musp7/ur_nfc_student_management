@@ -23,11 +23,24 @@
                     <div class="col-md-8">
                         <p><strong>Student ID:</strong> {{ student.student_id }}</p>
                         <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+                        <p><strong>Gender:</strong> {{ student.get_gender_display }}</p>
+                        <p><strong>Payment Status:</strong> 
+                            <span class="badge 
+                                {% if student.payment_status == 'PAID' %}bg-success
+                                {% elif student.payment_status == 'UNPAID' %}bg-danger
+                                {% else %}bg-warning{% endif %}">
+                                {{ student.get_payment_status_display }}
+                            </span>
+                        </p>
                         <p><strong>Campus:</strong> {{ student.campus.name }}</p>
                         <p><strong>College:</strong> {{ student.college.name }}</p>
                         <p><strong>School:</strong> {{ student.school.name }}</p>
                         <p><strong>Department:</strong> {{ student.department.name }}</p>
                         <p><strong>Class:</strong> {{ student.student_class.name }}</p>
+                        <h5><i class="fas fa-laptop me-2"></i>Laptop Information</h5>
+                        <p><strong>Serial Number:</strong> {{ student.laptop_serial }}</p>
+                        
+    
                     </div>
                 </div>
             </div>

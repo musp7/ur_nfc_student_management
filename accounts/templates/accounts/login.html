@@ -15,9 +15,8 @@
                         <div class="h-100 d-flex flex-column justify-content-center align-items-center p-4 text-white">
                             <div class="text-center mb-4">
                                 <i class="fas fa-university fa-4x mb-3"></i>
-                                <h4>SSMS</h4>
+                                <h4>SMS</h4>
                             </div>
-                            
                         </div>
                     </div>
                     
@@ -71,11 +70,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="remember">
-                                        
-                                    
+                                
                                 
                                 <div class="d-grid mb-3">
                                     <button class="btn btn-primary py-2 fw-bold" type="submit">
@@ -85,7 +80,7 @@
                                 
                                 <div class="text-center small text-muted">
                                     <span>Don't have an account? </span>
-                                    <a href="#" class="text-decoration-none" style="color: #0056b3;">Contact Admin</a>
+                                    <a href="#" class="text-decoration-none contact-admin-link" style="color: #0056b3;">Contact Admin</a>
                                 </div>
                             </form>
                         </div>
@@ -104,6 +99,49 @@
                     <a href="?role=registrar" class="btn btn-sm btn-outline-primary">Registrar</a>
                     <a href="?role=finance" class="btn btn-sm btn-outline-primary">Finance</a>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Admin Modal -->
+<div class="modal fade" id="contactAdminModal" tabindex="-1" aria-labelledby="contactAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="contactAdminModalLabel">Contact System Administrator</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="contactAdminForm">
+                    <div class="mb-3">
+                        <label for="contactName" class="form-label">Your Name</label>
+                        <input type="text" class="form-control" id="contactName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contactEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="contactEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contactSubject" class="form-label">Subject</label>
+                        <select class="form-select" id="contactSubject" required>
+                            <option value="" selected disabled>Select a subject</option>
+                            <option value="Account Request">Account Request</option>
+                            <option value="Login Issues">Login Issues</option>
+                            <option value="System Problem">System Problem</option>
+                            <option value="Feature Request">Feature Request</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contactMessage" class="form-label">Message</label>
+                        <textarea class="form-control" id="contactMessage" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitContactForm">Submit</button>
             </div>
         </div>
     </div>
@@ -135,6 +173,82 @@ $(document).ready(function() {
         }
         $(this).addClass('was-validated');
     });
+
+    // Contact Admin Modal
+    $('.contact-admin-link').click(function(e) {
+        e.preventDefault();
+        $('#contactAdminModal').modal('show');
+    });
+
+    // Submit contact form
+    $('#submitContactForm').click(function() {
+        const form = $('#contactAdminForm');
+        if (form[0].checkValidity()) {
+            // Here you would typically make an AJAX call to submit the form
+            const formData = {
+                name: $('#contactName').val(),
+                email: $('#contactEmail').val(),
+                subject: $('#contactSubject').val(),
+                message: $('#contactMessage').val()
+            };
+            
+            // Example AJAX call (you'll need to implement the backend endpoint)
+            $.ajax({
+                url: '/api/contact-admin/',
+                method: 'POST',
+                data: formData,
+                success: function(response) {
+                    $('#contactAdminModal').modal('hide');
+                    alert('Your message has been sent successfully!');
+                    form[0].reset();
+                },
+                error: function(xhr) {
+                    alert('There was an error sending your message. Please try again.');
+                }
+            });
+        } else {
+            form.addClass('was-validated');
+        }
+    });
 });
+</script>
+
+<script>
+    // About Modal Functionality (Works on ALL pages)
+    document.addEventListener('DOMContentLoaded', function() {
+        const aboutBtn = document.getElementById('aboutBtn');
+        const closeModal = document.getElementById('closeModal');
+        const aboutModal = document.getElementById('aboutModal');
+    
+        if (aboutBtn && closeModal && aboutModal) {
+            // Open modal
+            aboutBtn.addEventListener('click', () => {
+                aboutModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            });
+    
+            // Close modal (X button)
+            closeModal.addEventListener('click', () => {
+                aboutModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+    
+            // Close modal when clicking outside
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) {
+                    aboutModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+    
+            // Close modal with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && aboutModal.classList.contains('active')) {
+                    aboutModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

@@ -9,6 +9,9 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2><i class="fas fa-users me-2"></i>Registered Students</h2>
                 <div>
+                    <button id="generate-report" class="btn btn-success me-2">
+                        <i class="fas fa-file-pdf me-2"></i>Generate Report
+                    </button>
                     <button id="edit-selected" class="btn btn-primary me-2" disabled>
                         <i class="fas fa-edit me-2"></i>Edit Selected
                     </button>
@@ -18,19 +21,83 @@
                 </div>
             </div>
             <div class="card-body">
-                <form method="get" class="mb-4">
+                <form method="get" class="mb-4" id="filter-form">
                     <div class="row g-3">
-                        {% for field in filter_form %}
-                            <div class="col-md-4">
-                                {{ field.label_tag }}
-                                {{ field }}
-                                {% if field.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ field.errors }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
+                        <!-- Campus Field -->
+                        <div class="col-md-4">
+                            <label for="id_campus">Campus</label>
+                            <select name="campus" id="id_campus" class="form-select">
+                                <option value="">All Campuses</option>
+                                {% for campus in filter_form.campus.field.queryset %}
+                                    <option value="{{ campus.id }}" 
+                                            {% if filter_form.campus.value == campus.id|stringformat:"s" %}selected{% endif %}
+                                            data-campus-id="{{ campus.id }}">
+                                        {{ campus.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- College Field -->
+                        <div class="col-md-4">
+                            <label for="id_college">College</label>
+                            <select name="college" id="id_college" class="form-select" {% if not filter_form.college.value %}disabled{% endif %}>
+                                <option value="">All Colleges</option>
+                                {% for college in filter_form.college.field.queryset %}
+                                    <option value="{{ college.id }}" 
+                                            {% if filter_form.college.value == college.id|stringformat:"s" %}selected{% endif %}
+                                            data-campus-id="{{ college.campus.id }}">
+                                        {{ college.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- School Field -->
+                        <div class="col-md-4">
+                            <label for="id_school">School</label>
+                            <select name="school" id="id_school" class="form-select" {% if not filter_form.school.value %}disabled{% endif %}>
+                                <option value="">All Schools</option>
+                                {% for school in filter_form.school.field.queryset %}
+                                    <option value="{{ school.id }}" 
+                                            {% if filter_form.school.value == school.id|stringformat:"s" %}selected{% endif %}
+                                            data-college-id="{{ school.college.id }}">
+                                        {{ school.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Department Field -->
+                        <div class="col-md-4">
+                            <label for="id_department">Department</label>
+                            <select name="department" id="id_department" class="form-select" {% if not filter_form.department.value %}disabled{% endif %}>
+                                <option value="">All Departments</option>
+                                {% for department in filter_form.department.field.queryset %}
+                                    <option value="{{ department.id }}" 
+                                            {% if filter_form.department.value == department.id|stringformat:"s" %}selected{% endif %}
+                                            data-school-id="{{ department.school.id }}">
+                                        {{ department.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Class Field -->
+                        <div class="col-md-4">
+                            <label for="id_student_class">Class</label>
+                            <select name="student_class" id="id_student_class" class="form-select" {% if not filter_form.student_class.value %}disabled{% endif %}>
+                                <option value="">All Classes</option>
+                                {% for class in filter_form.student_class.field.queryset %}
+                                    <option value="{{ class.id }}" 
+                                            {% if filter_form.student_class.value == class.id|stringformat:"s" %}selected{% endif %}
+                                            data-department-id="{{ class.department.id }}">
+                                        {{ class.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
                         <div class="col-md-4 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-filter me-2"></i>Filter
@@ -39,6 +106,7 @@
                     </div>
                 </form>
 
+                <!-- Rest of your template remains unchanged -->
                 <form id="students-form" method="post">
                     {% csrf_token %}
                     <div class="table-responsive">
@@ -94,25 +162,23 @@
 {% block extra_js %}
 <script>
 $(document).ready(function () {
-    // Enable/Disable action buttons based on selection
+    // Your existing checkbox handling code
     function toggleActionButtons() {
         const anySelected = $('.select-student:checked').length > 0;
         $('#edit-selected').prop('disabled', !anySelected);
         $('#delete-selected').prop('disabled', !anySelected);
     }
 
-    // Select All functionality
     $('#select-all').change(function () {
         $('.select-student').prop('checked', $(this).prop('checked'));
         toggleActionButtons();
     });
 
-    // Toggle action buttons when individual checkboxes are selected/deselected
     $('.select-student').change(function () {
         toggleActionButtons();
     });
 
-    // Edit Selected Students
+    // Your existing edit/delete button handlers
     $('#edit-selected').click(function (e) {
         e.preventDefault();
         const selectedStudents = $('.select-student:checked').map(function () {
@@ -120,21 +186,179 @@ $(document).ready(function () {
         }).get();
 
         if (selectedStudents.length === 1) {
-            // Redirect to the edit page for a single student
             window.location.href = `/registrar/edit-student/${selectedStudents[0]}/`;
         } else {
-            // Redirect to the bulk edit page
             window.location.href = `/registrar/edit-students/?ids=${selectedStudents.join(',')}`;
         }
     });
 
-    // Delete Selected Students
     $('#delete-selected').click(function (e) {
         e.preventDefault();
         if (confirm('Are you sure you want to delete the selected students?')) {
             $('#students-form').attr('action', '{% url "delete-students" %}');
             $('#students-form').submit();
         }
+    });
+
+    // Dynamic filtering logic - Modified to preserve selections
+    $('#id_campus').change(function() {
+        const campusId = $(this).val();
+        const collegeSelect = $('#id_college');
+        
+        if (campusId) {
+            // Enable college select
+            collegeSelect.prop('disabled', false);
+            
+            // Filter colleges by campus
+            collegeSelect.find('option').each(function() {
+                const collegeOption = $(this);
+                if (collegeOption.val() === '') return; // Keep "All Colleges" option
+                
+                // Show only colleges for selected campus
+                const collegeCampusId = collegeOption.data('campus-id');
+                collegeOption.toggle(collegeCampusId == campusId);
+            });
+            
+            // Get current college value before filtering
+            const currentCollege = collegeSelect.val();
+            
+            // If current college doesn't belong to selected campus, clear it
+            if (currentCollege) {
+                const selectedCollege = collegeSelect.find('option[value="' + currentCollege + '"]');
+                if (selectedCollege.length && !selectedCollege.is(':visible')) {
+                    collegeSelect.val('');
+                }
+            }
+        } else {
+            // Disable but don't clear college select
+            collegeSelect.prop('disabled', true);
+        }
+    });
+
+    $('#id_college').change(function() {
+        const collegeId = $(this).val();
+        const schoolSelect = $('#id_school');
+        
+        if (collegeId) {
+            schoolSelect.prop('disabled', false);
+            
+            // Filter schools by college
+            schoolSelect.find('option').each(function() {
+                const schoolOption = $(this);
+                if (schoolOption.val() === '') return;
+                
+                const schoolCollegeId = schoolOption.data('college-id');
+                schoolOption.toggle(schoolCollegeId == collegeId);
+            });
+            
+            // Get current school value before filtering
+            const currentSchool = schoolSelect.val();
+            
+            // If current school doesn't belong to selected college, clear it
+            if (currentSchool) {
+                const selectedSchool = schoolSelect.find('option[value="' + currentSchool + '"]');
+                if (selectedSchool.length && !selectedSchool.is(':visible')) {
+                    schoolSelect.val('');
+                }
+            }
+        } else {
+            // Disable but don't clear school select
+            schoolSelect.prop('disabled', true);
+        }
+    });
+
+    $('#id_school').change(function() {
+        const schoolId = $(this).val();
+        const departmentSelect = $('#id_department');
+        
+        if (schoolId) {
+            departmentSelect.prop('disabled', false);
+            
+            // Filter departments by school
+            departmentSelect.find('option').each(function() {
+                const deptOption = $(this);
+                if (deptOption.val() === '') return;
+                
+                const deptSchoolId = deptOption.data('school-id');
+                deptOption.toggle(deptSchoolId == schoolId);
+            });
+            
+            // Get current department value before filtering
+            const currentDept = departmentSelect.val();
+            
+            // If current department doesn't belong to selected school, clear it
+            if (currentDept) {
+                const selectedDept = departmentSelect.find('option[value="' + currentDept + '"]');
+                if (selectedDept.length && !selectedDept.is(':visible')) {
+                    departmentSelect.val('');
+                }
+            }
+        } else {
+            // Disable but don't clear department select
+            departmentSelect.prop('disabled', true);
+        }
+    });
+
+    $('#id_department').change(function() {
+        const deptId = $(this).val();
+        const classSelect = $('#id_student_class');
+        
+        if (deptId) {
+            classSelect.prop('disabled', false);
+            
+            // Filter classes by department
+            classSelect.find('option').each(function() {
+                const classOption = $(this);
+                if (classOption.val() === '') return;
+                
+                const classDeptId = classOption.data('department-id');
+                classOption.toggle(classDeptId == deptId);
+            });
+            
+            // Get current class value before filtering
+            const currentClass = classSelect.val();
+            
+            // If current class doesn't belong to selected department, clear it
+            if (currentClass) {
+                const selectedClass = classSelect.find('option[value="' + currentClass + '"]');
+                if (selectedClass.length && !selectedClass.is(':visible')) {
+                    classSelect.val('');
+                }
+            }
+        } else {
+            // Disable but don't clear class select
+            classSelect.prop('disabled', true);
+        }
+    });
+
+    // Initialize the form based on current values
+    if ($('#id_campus').val()) {
+        $('#id_campus').trigger('change');
+    }
+    if ($('#id_college').val()) {
+        $('#id_college').trigger('change');
+    }
+    if ($('#id_school').val()) {
+        $('#id_school').trigger('change');
+    }
+    if ($('#id_department').val()) {
+        $('#id_department').trigger('change');
+    }
+});
+
+// Generate Report - Keep your existing code exactly as is
+$(document).ready(function() {
+    $('#generate-report').click(function(e) {
+        e.preventDefault();
+        
+        // Get all current filter values from the form
+        const formData = $('#filter-form').serialize();
+        
+        // Build the report URL with all filter parameters
+        let reportUrl = '{% url "registrar-report" %}?' + formData;
+        
+        // Open the report in a new tab
+        window.open(reportUrl, '_blank');
     });
 });
 </script>

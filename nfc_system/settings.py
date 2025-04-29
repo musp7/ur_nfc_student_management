@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'rest_framework',  # For APIs
     'core',
     'accounts',  # Custom user model app
+    #othe apps
+    'django_grip',
+    'django_eventstream',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +55,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+     # ... other middleware ...
+    'django_grip.GripMiddleware',
 ]
 
 ROOT_URLCONF = 'nfc_system.urls'
@@ -109,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Kigali'
 
 USE_I18N = True
 
@@ -142,3 +148,4 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 MEDIA_URL = '/media/'  # URL prefix for media files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where media files are stored
+EVENTSTREAM_STORAGE_CLASS = 'django_eventstream.storage.DjangoModelStorage'

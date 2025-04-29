@@ -4,17 +4,14 @@
 
 {% block extra_css %}
 <style>
-    .portal-slider {
-        position: relative;
-        height: 300px;
-        overflow: hidden;
+    .portals-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
         margin: 2rem 0;
     }
     
     .portal-card {
-        position: absolute;
-        width: 100%;
-        height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -24,18 +21,12 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         padding: 2rem;
         text-align: center;
-        transition: all 0.8s ease;
-        opacity: 0;
-        transform: translateX(100%);
+        height: 100%;
+        transition: transform 0.3s ease;
     }
     
-    .portal-card.active {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    
-    .portal-card.prev {
-        transform: translateX(-100%);
+    .portal-card:hover {
+        transform: translateY(-5px);
     }
     
     .portal-icon {
@@ -55,27 +46,6 @@
         color: #666;
         margin-bottom: 1.5rem;
     }
-    
-    .slider-controls {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-    
-    .slider-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #ccc;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .slider-dot.active {
-        background: #003366;
-        transform: scale(1.2);
-    }
 </style>
 {% endblock %}
 
@@ -83,13 +53,13 @@
 <div class="container py-5">
     <div class="text-center mb-5">
         <h1 class="display-4 mb-3" style="color: #003366;">Welcome to Our System</h1>
-        <p class="lead text-muted">Select your portal to access the student management system</p>
+        <p class="lead text-muted">Select your portal to access the smart student management system</p>
     </div>
 
-    <!-- Animated Portal Slider -->
-    <div class="portal-slider">
+    <!-- Static Portal Grid -->
+    <div class="portals-container">
         <!-- Gatekeeper Portal -->
-        <div class="portal-card active" id="portal-gatekeeper">
+        <div class="portal-card">
             <div class="portal-icon">
                 <i class="fas fa-shield-alt"></i>
             </div>
@@ -101,7 +71,7 @@
         </div>
         
         <!-- Teacher Portal -->
-        <div class="portal-card" id="portal-teacher">
+        <div class="portal-card">
             <div class="portal-icon">
                 <i class="fas fa-chalkboard-teacher"></i>
             </div>
@@ -113,7 +83,7 @@
         </div>
         
         <!-- Registrar Portal -->
-        <div class="portal-card" id="portal-registrar">
+        <div class="portal-card">
             <div class="portal-icon">
                 <i class="fas fa-user-edit"></i>
             </div>
@@ -125,7 +95,7 @@
         </div>
         
         <!-- Finance Portal -->
-        <div class="portal-card" id="portal-finance">
+        <div class="portal-card">
             <div class="portal-icon">
                 <i class="fas fa-money-bill-wave"></i>
             </div>
@@ -136,71 +106,5 @@
             </a>
         </div>
     </div>
-
-    <!-- Slider Controls -->
-    <div class="slider-controls">
-        <div class="slider-dot active" data-target="portal-gatekeeper"></div>
-        <div class="slider-dot" data-target="portal-teacher"></div>
-        <div class="slider-dot" data-target="portal-registrar"></div>
-        <div class="slider-dot" data-target="portal-finance"></div>
-    </div>
 </div>
-
-{% block extra_js %}
-<script>
-$(document).ready(function() {
-    const portals = $('.portal-card');
-    const dots = $('.slider-dot');
-    let currentIndex = 0;
-    let interval;
-    
-    // Function to show specific portal
-    function showPortal(index) {
-        // Update active state
-        portals.removeClass('active prev');
-        dots.removeClass('active');
-        
-        // Mark previous portal
-        if (currentIndex >= 0) {
-            portals.eq(currentIndex).addClass('prev');
-        }
-        
-        // Update current index
-        currentIndex = index;
-        portals.eq(currentIndex).addClass('active');
-        dots.eq(currentIndex).addClass('active');
-    }
-    
-    // Auto-rotate portals
-    function startSlider() {
-        interval = setInterval(function() {
-            const nextIndex = (currentIndex + 1) % portals.length;
-            showPortal(nextIndex);
-        }, 1500); // Change every 4 seconds
-    }
-    
-    // Handle dot clicks
-    dots.on('click', function() {
-        const targetIndex = dots.index(this);
-        showPortal(targetIndex);
-        resetInterval();
-    });
-    
-    // Reset interval when user interacts
-    function resetInterval() {
-        clearInterval(interval);
-        startSlider();
-    }
-    
-    // Start the slider
-    startSlider();
-    
-    // Pause on hover
-    $('.portal-slider').hover(
-        function() { clearInterval(interval); },
-        function() { resetInterval(); }
-    );
-});
-</script>
-{% endblock %}
 {% endblock %}

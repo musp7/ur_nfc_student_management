@@ -5,6 +5,7 @@ from . import views
 
 
 
+
 urlpatterns = [
     path('profile/<str:student_id>/', views.student_profile, name='student-profile'),
     path('gatekeeper/dashboard/', views.gatekeeper_dashboard, name='gatekeeper-dashboard'),
@@ -28,4 +29,14 @@ urlpatterns = [
     path('registrar/edit-student/<int:student_id>/', views.edit_student, name='edit-student'),
     path('registrar/edit-students/', views.edit_students, name='edit-students'),
     path('registrar/delete-students/', views.delete_students, name='delete-students'),
+    path('gatekeeper/export-entries/', views.export_entries, name='export-entries'),
+    path('api/classes/', views.get_classes_by_department, name='get_classes_by_department'),
+    path('ajax/load-classes/', views.load_classes, name='load_classes'),
+    path('teacher/reset-attendance/', views.reset_attendance, name='reset-attendance'),
+    path('finance/report/', views.generate_payment_report, name='generate-payment-report'),
+    path('registrar/report/', views.generate_registered_students_report, name='registrar-report'),
+
+
+
+   
 ]
