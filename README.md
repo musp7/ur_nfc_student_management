@@ -1,6 +1,7 @@
 
 
 📘 Smart Student Management System Using NFC Technology
+
 📌 Overview
 The NFC Student Management System is a Django-based web application developed to streamline student management processes for various roles,
 including Registrar, Gatekeeper, Teacher, and Finance Staff. It integrates NFC (Near Field Communication) technology to improve efficiency 
