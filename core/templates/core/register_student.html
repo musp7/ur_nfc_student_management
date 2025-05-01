@@ -2,15 +2,70 @@
 
 {% block title %}Register Student{% endblock %}
 
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #4361ee, #3f37c9);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 10px 15px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #4cc9f0, #4895ef);
+        border: none;
+        padding: 10px 25px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(76, 201, 240, 0.4);
+    }
+    
+    .nfc-url-container {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        display: none;
+    }
+    
+    .nfc-url {
+        word-break: break-all;
+        color: #4361ee;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-md-8 mx-auto">
         <div class="card">
             <div class="card-header">
-                <h2><i class="fas fa-user-plus me-2"></i>Register New Student</h2>
+                <h2 class="mb-0"><i class="fas fa-user-plus me-2"></i>Register New Student</h2>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="studentForm">
                     {% csrf_token %}
                     <div class="row g-3">
                         {% for field in form %}
@@ -24,7 +79,16 @@
                                 {% endif %}
                             </div>
                         {% endfor %}
+                        
                         <div class="col-12">
+                            <div class="nfc-url-container" id="nfcUrlContainer">
+                                <h5 class="mb-2"><i class="fas fa-link me-2"></i>NFC URL</h5>
+                                <p class="nfc-url" id="nfcUrlPreview"></p>
+                                <small class="text-muted">This URL will be automatically generated after registration</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mt-4">
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-save me-2"></i>Register Student
                             </button>
@@ -38,4 +102,26 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('studentForm');
+    const nfcUrlContainer = document.getElementById('nfcUrlContainer');
+    const nfcUrlPreview = document.getElementById('nfcUrlPreview');
+    
+    // Show NFC URL preview if student_id is entered
+    const studentIdField = document.querySelector('[name="student_id"]');
+    if (studentIdField) {
+        studentIdField.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                nfcUrlContainer.style.display = 'block';
+                nfcUrlPreview.textContent = `{{ request.scheme }}://{{ request.get_host }}{% url 'student-profile' 'STUDENT_ID' %}`
+                    .replace('STUDENT_ID', this.value);
+            } else {
+                nfcUrlContainer.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

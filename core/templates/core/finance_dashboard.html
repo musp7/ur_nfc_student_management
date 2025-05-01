@@ -104,6 +104,12 @@
                                     All Students
                                 </label>
                             </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportType" id="pendingReport" value="pending">
+                                <label class="form-check-label" for="pendingReport">
+                                    Pending
+                                </label>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <button id="generatePdfBtn" class="btn btn-success">
@@ -163,30 +169,42 @@ $(document).ready(function() {
     // Function to load classes based on selected department
     function loadClasses(departmentId) {
         const classSelect = $('#id_student_class');
-        classSelect.html('<option value="">---------</option>');
+        classSelect.html('<option value="">Loading...</option>');  // Show loading state
         
         if (departmentId) {
-            // Fetch classes for selected department
+            // Fetch classes for selected department using the unified view
             $.ajax({
-                url: '{% url "load_classes" %}',
+                url: '{% url "get_classes_by_department" %}',
                 data: {
-                    'department_id': departmentId
+                    'department': departmentId  // Changed to use 'department' parameter
                 },
                 success: function(data) {
-                    $.each(data, function(index, cls) {
-                        const option = $('<option></option>')
-                            .attr('value', cls.id)
-                            .text(cls.name);
-                        
-                        // Preselect if this was the previously selected class
-                        if ('{{ request.GET.student_class }}' == cls.id.toString()) {
-                            option.attr('selected', 'selected');
-                        }
-                        
-                        classSelect.append(option);
-                    });
+                    classSelect.empty();  // Clear loading message
+                    classSelect.append('<option value="">---------</option>');
+                    
+                    if (data && data.length > 0) {
+                        $.each(data, function(index, cls) {
+                            const option = $('<option></option>')
+                                .attr('value', cls.id)
+                                .text(cls.name);
+                            
+                            // Preselect if this was the previously selected class
+                            if ('{{ request.GET.student_class }}' == cls.id.toString()) {
+                                option.attr('selected', 'selected');
+                            }
+                            
+                            classSelect.append(option);
+                        });
+                    } else {
+                        classSelect.append('<option value="">No classes found</option>');
+                    }
+                },
+                error: function() {
+                    classSelect.html('<option value="">Error loading classes</option>');
                 }
             });
+        } else {
+            classSelect.html('<option value="">Select Department First</option>');
         }
     }
 
@@ -199,6 +217,9 @@ $(document).ready(function() {
     // Initialize on page load if department is selected
     if ($('#id_department').val()) {
         loadClasses($('#id_department').val());
+    } else {
+        // If no department selected, ensure class dropdown is properly initialized
+        $('#id_student_class').html('<option value="">Select Department First</option>');
     }
 
     // Report generation functionality
