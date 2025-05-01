@@ -105,8 +105,7 @@
                         <div class="flex-grow-1">
                             <h6 class="text-uppercase text-muted mb-2">Checked Out</h6>
                             <h2 class="mb-0">
-                                {% widthratio total_entries|default:1 current_in_sales|default:1 1 as ratio %}
-                                {{ ratio }}
+                                {{ checked_out_count }}
                             </h2>
                         </div>
                         <div class="ms-3">
@@ -151,7 +150,6 @@
                             <th>Full Name</th>
                             <th>Entry Time</th>
                             <th>Exit Time</th>
-                            
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -171,7 +169,6 @@
                                     <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
-                            
                             <td>
                                 {% if entry.exit_time %}
                                     <span class="badge bg-success">Checked Out</span>
@@ -184,7 +181,7 @@
                         <tr>
                             <td colspan="6" class="text-center py-4 text-muted">
                                 <i class="bi bi-exclamation-circle fs-4 d-block mb-2"></i>
-                               Choose a current date!!
+                               Choose a current or previous date!!
                             </td>
                         </tr>
                         {% endfor %}
@@ -244,5 +241,5 @@
             fetchClasses(departmentSelect.value);
         }
     });
-    </script>
+</script>
 {% endblock %}

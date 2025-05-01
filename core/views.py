@@ -149,6 +149,7 @@ def gatekeeper_dashboard(request):
         'selected_date': selected_date,
         'total_entries': entries.count(),
         'current_in_school': entries.filter(exit_time__isnull=True).count(),
+        'checked_out_count': entries.filter(exit_time__isnull=True).count(),
         'timezone_now': timezone_now,
         'departments': departments,
         'classes': classes,
