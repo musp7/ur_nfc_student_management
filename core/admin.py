@@ -43,7 +43,7 @@ class ClassAdmin(admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('student_id', 'first_name', 'last_name', 'campus', 'college', 'school', 'department', 'student_class', 'nfc_url_link')
+    list_display = ('student_id', 'first_name', 'last_name', 'campus', 'college', 'school', 'department', 'student_class', 'nfc_url_link','laptop_model', 'laptop_serial')
     list_filter = ('payment_status',) 
     search_fields = ('student_id', 'first_name', 'last_name', 'campus__name', 'college__name', 'school__name', 'department__name', 'student_class__name')
     actions = ['write_to_nfc_card']

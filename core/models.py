@@ -123,6 +123,24 @@ class Student(models.Model):
         blank=True,
         related_name='students'
     )
+    
+    LAPTOP_MODEL_CHOICES = [
+        ('HP', 'HP'),
+        ('Dell', 'Dell'),
+        ('Lenovo', 'Lenovo'),
+        ('MacBook', 'MacBook'),
+        ('Acer', 'Acer'),
+        ('Asus', 'Asus'),
+        ('Other', 'Other'),
+    ]
+    
+    laptop_model = models.CharField(
+        max_length=20,
+        choices=LAPTOP_MODEL_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Laptop Model"
+    )
     laptop_serial = models.CharField(max_length=50, blank=True, null=True)
     photo = models.ImageField(
         upload_to='student_photos/',

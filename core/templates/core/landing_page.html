@@ -1,110 +1,310 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Welcome - UR NFC System{% endblock %}
+{% block title %}Welcome - SSMS{% endblock %}
 
 {% block extra_css %}
 <style>
-    .portals-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        margin: 2rem 0;
+    .stats-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #003366;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+    }
+    
+    .top-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .top-list-item {
+        border-left: 3px solid #003366;
+        transition: all 0.2s ease;
+    }
+    
+    .top-list-item:hover {
+        background-color: #f8f9fa;
+        border-left-width: 5px;
     }
     
     .portal-card {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: white;
+        transition: all 0.3s ease;
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-        text-align: center;
-        height: 100%;
-        transition: transform 0.3s ease;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     }
     
     .portal-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
     
     .portal-icon {
-        font-size: 4rem;
-        margin-bottom: 1.5rem;
-        color: #003366;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 51, 102, 0.1);
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
     }
     
-    .portal-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: #003366;
+    .loading-spinner {
+        display: inline-block;
+        width: 2rem;
+        height: 2rem;
+        border: 0.25em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border 0.75s linear infinite;
     }
     
-    .portal-desc {
-        color: #666;
-        margin-bottom: 1.5rem;
+    @keyframes spinner-border {
+        to { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <div class="text-center mb-5">
-        <h1 class="display-4 mb-3" style="color: #003366;">Welcome to Our Smart Student Management System</h1>
-        <p class="lead text-muted">Select your portal to access the smart student management system</p>
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 mb-3" style="color: #003366;">Smart Student Management System</h1>
+            <p class="lead text-muted">Comprehensive platform for managing student data across all faculties</p>
+        </div>
     </div>
-
-    <!-- Static Portal Grid -->
-    <div class="portals-container">
+     <!-- Portal Cards -->
+     <div class="row mb-4">
+        <div class="col-12 mb-4">
+            <h3 class="text-center mb-4"><i class="fas fa-door-open me-2"></i>System Portals</h3>
+        </div>
+        
         <!-- Gatekeeper Portal -->
-        <div class="portal-card">
-            <div class="portal-icon">
-                <i class="fas fa-shield-alt"></i>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card portal-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="portal-icon">
+                        <i class="fas fa-shield-alt fa-3x" style="color: #003366;"></i>
+                    </div>
+                    <h4 class="mb-3">Gatekeeper Portal</h4>
+                    <p class="text-muted mb-4">Manage student access and campus security</p>
+                    <a href="{% url 'login' %}?next=/gatekeeper/dashboard/&role=gatekeeper" class="btn btn-primary px-4">
+                        Access Portal <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
-            <h3 class="portal-title">Gatekeeper Portal</h3>
-            <p class="portal-desc">Manage student access and campus security</p>
-            <a href="{% url 'login' %}?next=/gatekeeper/dashboard/&role=gatekeeper" class="btn btn-primary px-4">
-                Access Portal <i class="fas fa-arrow-right ms-2"></i>
-            </a>
         </div>
         
         <!-- Teacher Portal -->
-        <div class="portal-card">
-            <div class="portal-icon">
-                <i class="fas fa-chalkboard-teacher"></i>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card portal-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="portal-icon">
+                        <i class="fas fa-chalkboard-teacher fa-3x" style="color: #003366;"></i>
+                    </div>
+                    <h4 class="mb-3">Teacher Portal</h4>
+                    <p class="text-muted mb-4">Take attendance and manage classes</p>
+                    <a href="{% url 'login' %}?next=/teacher/dashboard/&role=teacher" class="btn btn-primary px-4">
+                        Access Portal <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
-            <h3 class="portal-title">Teacher Portal</h3>
-            <p class="portal-desc">Take attendance and manage classes</p>
-            <a href="{% url 'login' %}?next=/teacher/dashboard/&role=teacher" class="btn btn-primary px-4">
-                Access Portal <i class="fas fa-arrow-right ms-2"></i>
-            </a>
         </div>
         
         <!-- Registrar Portal -->
-        <div class="portal-card">
-            <div class="portal-icon">
-                <i class="fas fa-user-edit"></i>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card portal-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="portal-icon">
+                        <i class="fas fa-user-edit fa-3x" style="color: #003366;"></i>
+                    </div>
+                    <h4 class="mb-3">Registrar Portal</h4>
+                    <p class="text-muted mb-4">Manage student records and registration</p>
+                    <a href="{% url 'login' %}?next=/registrar/dashboard/&role=registrar" class="btn btn-primary px-4">
+                        Access Portal <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
-            <h3 class="portal-title">Registrar Portal</h3>
-            <p class="portal-desc">Manage student records and registration</p>
-            <a href="{% url 'login' %}?next=/registrar/dashboard/&role=registrar" class="btn btn-primary px-4">
-                Access Portal <i class="fas fa-arrow-right ms-2"></i>
-            </a>
         </div>
         
         <!-- Finance Portal -->
-        <div class="portal-card">
-            <div class="portal-icon">
-                <i class="fas fa-money-bill-wave"></i>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card portal-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="portal-icon">
+                        <i class="fas fa-money-bill-wave fa-3x" style="color: #003366;"></i>
+                    </div>
+                    <h4 class="mb-3">Finance Portal</h4>
+                    <p class="text-muted mb-4">Handle payments and financial records</p>
+                    <a href="{% url 'login' %}?next=/finance/dashboard/&role=finance" class="btn btn-primary px-4">
+                        Access Portal <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
-            <h3 class="portal-title">Finance Portal</h3>
-            <p class="portal-desc">Handle payments and financial records</p>
-            <a href="{% url 'login' %}?next=/finance/dashboard/&role=finance" class="btn btn-primary px-4">
-                Access Portal <i class="fas fa-arrow-right ms-2"></i>
-            </a>
         </div>
     </div>
 </div>
+
+    <!-- Statistics Section -->
+    <div class="row mb-5">
+        <div class="col-12 mb-4">
+            <h3 class="text-center mb-4"><i class="fas fa-chart-line me-2"></i>System Statistics</h3>
+        </div>
+        
+        <!-- Main Stats Cards -->
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number" id="total-students">
+                        <span class="loading-spinner"></span>
+                    </div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number" id="total-campuses">
+                        <span class="loading-spinner"></span>
+                    </div>
+                    <div class="stat-label">Campuses</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number" id="total-colleges">
+                        <span class="loading-spinner"></span>
+                    </div>
+                    <div class="stat-label">Colleges</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-number" id="total-schools">
+                        <span class="loading-spinner"></span>
+                    </div>
+                    <div class="stat-label">Schools</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Lists -->
+        <div class="col-md10 mb-4">
+            <div class="card stats-card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-school me-2"></i>Top Schools by Enrollment</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush top-list" id="top-schools">
+                        <div class="text-center py-4">
+                            <span class="loading-spinner"></span>
+                            <p>Loading schools data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+   
+
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Fetch statistics from the backend
+    function loadStatistics() {
+        $.ajax({
+            url: '{% url "system-statistics" %}',
+            method: 'GET',
+            success: function(data) {
+                // Update main stats
+                $('#total-students').html(data.total_students.toLocaleString());
+                $('#total-campuses').html(data.campuses.length);
+                $('#total-colleges').html(data.colleges.length);
+                $('#total-schools').html(data.schools.length);
+                
+                // Update top schools list
+                const topSchoolsList = $('#top-schools');
+                topSchoolsList.empty();
+                
+                if (data.schools.length > 0) {
+                    data.schools.forEach(function(school) {
+                        topSchoolsList.append(`
+                            <div class="list-group-item top-list-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>${school.name}</span>
+                                    <span class="badge bg-primary rounded-pill">${school.student_count}</span>
+                                </div>
+                            </div>
+                        `);
+                    });
+                } else {
+                    topSchoolsList.append('<div class="list-group-item text-muted">No school data available</div>');
+                }
+                
+                // Update recent students list
+                const recentStudentsList = $('#recent-students');
+                recentStudentsList.empty();
+                
+                if (data.latest_registered.length > 0) {
+                    data.latest_registered.forEach(function(student) {
+                        recentStudentsList.append(`
+                            <div class="list-group-item top-list-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>${student.first_name} ${student.last_name}</span>
+                                    <small class="text-muted">${student.student_id}</small>
+                                </div>
+                            </div>
+                        `);
+                    });
+                } else {
+                    recentStudentsList.append('<div class="list-group-item text-muted">No recent students</div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading statistics:', error);
+                $('.stat-number').html('<i class="fas fa-exclamation-triangle text-danger"></i>');
+                $('#top-schools, #recent-students').html(
+                    '<div class="list-group-item text-danger">Failed to load data. Please refresh.</div>'
+                );
+            }
+        });
+    }
+    
+    // Load statistics when page loads
+    loadStatistics();
+    
+    // Refresh statistics every 5 minutes
+    setInterval(loadStatistics, 300000);
+});
+</script>
+{% endblock %}
 {% endblock %}

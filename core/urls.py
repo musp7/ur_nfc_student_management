@@ -34,9 +34,6 @@ urlpatterns = [
     path('ajax/load-classes/', views.load_classes, name='load_classes'),
     path('teacher/reset-attendance/', views.reset_attendance, name='reset-attendance'),
     path('finance/report/', views.generate_payment_report, name='generate-payment-report'),
-    path('registrar/report/', views.generate_registered_students_report, name='registrar-report'),
-
-
-
-   
+    path('registrar/report/', views.generate_registered_students_report, name='registrar-report'), 
+    path('api/statistics/', views.get_system_statistics, name='system-statistics'),  
 ]

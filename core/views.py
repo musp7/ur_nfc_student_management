@@ -5,7 +5,7 @@ from multiprocessing import Value
 from django.forms import IntegerField
 from django.utils import timezone
 from django.http import JsonResponse
-from django.db.models import When, Case
+from django.db.models import When, Case, Count
 from django.shortcuts import render, get_object_or_404 , redirect 
 from django.contrib import messages
 
@@ -49,29 +49,29 @@ from reportlab.lib.styles import getSampleStyleSheet
 def student_profile(request, student_id):
     student = get_object_or_404(Student, student_id=student_id)
     attendance_type = request.GET.get('attendance_type') or request.session.get('attendance_type')
+    is_modal = request.GET.get('modal', 'false').lower() == 'true'
+    portal_message = None
     
     # Gatekeeper functionality (unchanged)
     if request.user.role == 'gatekeeper':
-        # Check if student has an open entry (no exit time)
         last_entry = StudentEntry.objects.filter(
             student=student,
             exit_time__isnull=True
         ).order_by('-entry_time').first()
         
         if last_entry:
-            # Mark exit
             last_entry.exit_time = timezone.now()
             last_entry.save()
+            portal_message = f"{student.first_name} has exited at {last_entry.exit_time.strftime('%H:%M:%S')}"
         else:
-            # Create new entry
             StudentEntry.objects.create(
                 student=student,
                 gatekeeper=request.user
             )
+            portal_message = f"Welcome {student.first_name}! Entry recorded at {timezone.now().strftime('%H:%M:%S')}"
     
-    # Teacher attendance tracking (new functionality)
+    # Teacher attendance tracking (unchanged)
     elif request.user.role == 'teacher' and attendance_type:
-        # Mark attendance only if not already marked for this type
         if not Attendance.objects.filter(
             student=student,
             teacher=request.user,
@@ -82,12 +82,50 @@ def student_profile(request, student_id):
                 teacher=request.user,
                 attendance_type=attendance_type
             )
+            
+            if attendance_type == 'CLASS':
+                portal_message = f"Class attendance recorded for {student.first_name}"
+            elif attendance_type == 'EXAM_START':
+                portal_message = f"Exam started for {student.first_name} at {timezone.now().strftime('%H:%M:%S')}"
+            elif attendance_type == 'EXAM_END':
+                portal_message = f"Exam submitted by {student.first_name} at {timezone.now().strftime('%H:%M:%S')}"
     
-    return render(request, 'core/student_profile.html', {
+    # Check if request is from WebSocket (unchanged)
+    is_websocket = request.headers.get('Upgrade', '').lower() == 'websocket'
+    
+    # Prepare context data
+    context = {
         'student': student,
         'attendance_type': attendance_type if request.user.role == 'teacher' else None,
-    })
-
+        'portal_message': portal_message,
+        'hide_financial': request.user.role == 'gatekeeper',
+    }
+    
+    # If WebSocket request, return JSON response (unchanged)
+    if is_websocket:
+        from django.http import JsonResponse
+        student_data = {
+            'id': student.student_id,
+            'name': f"{student.first_name} {student.last_name}",
+            'photo_url': student.photo.url if student.photo else None,
+            'department': student.department.name if student.department else None,
+            'class': student.student_class.name if student.student_class else None,
+            'laptop_model': student.laptop_model or "Not specified",
+            'laptop_serial': student.laptop_serial or "Not specified",
+            'message': portal_message,
+        }
+        
+        if request.user.role != 'gatekeeper':
+            student_data['payment_status'] = student.get_payment_status_display()
+            student_data['payment_badge_class'] = 'bg-success' if student.payment_status == 'PAID' else 'bg-danger' if student.payment_status == 'UNPAID' else 'bg-warning'
+        
+        return JsonResponse(student_data)
+    
+    # If modal request, return modal template
+    if is_modal:
+        return render(request, 'core/student_profile_modal.html', context)
+    
+    return render(request, 'core/student_profile.html', context)
 
 
 
@@ -1413,3 +1451,26 @@ def export_entries(request):
     
     p.save()
     return response
+
+
+def get_system_statistics(request):
+    """Return system statistics for the landing page"""
+    stats = {
+        'total_students': Student.objects.count(),
+        'campuses': list(Campus.objects.annotate(
+            student_count=Count('students')
+        ).values('name', 'student_count')),
+        'colleges': list(College.objects.annotate(
+            student_count=Count('students')
+        ).values('name', 'student_count')),
+        'schools': list(School.objects.annotate(
+            student_count=Count('students')
+        ).order_by('-student_count')[:5].values('name', 'student_count')),
+        'departments': list(Department.objects.annotate(
+            student_count=Count('students')
+        ).order_by('-student_count')[:5].values('name', 'student_count')),
+        'latest_registered': list(Student.objects.order_by('-id')[:5].values(
+            'student_id', 'first_name', 'last_name'
+        ))
+    }
+    return JsonResponse(stats)

@@ -1,6 +1,6 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Login - UR NFC System{% endblock %}
+{% block title %}Login - SSMS{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -15,7 +15,12 @@
                         <div class="h-100 d-flex flex-column justify-content-center align-items-center p-4 text-white">
                             <div class="text-center mb-4">
                                 <i class="fas fa-university fa-4x mb-3"></i>
-                                <h4>SMS</h4>
+                                <h4>SSMS</h4>
+                                <div class="mb-2">
+                                    <button onclick="window.history.back();" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i> Back
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -26,6 +31,16 @@
                             <!-- Header -->
                             <div class="text-center mb-4">
                                 <h3 class="fw-bold" style="color: #003366;">Welcome Back</h3>
+                                {% if request.GET.role %}
+                                <div class="alert alert-info py-2">
+                                    <i class="fas fa-door-open me-2"></i>
+                                    {% if request.GET.role == 'gatekeeper' %}Gatekeeper Portal
+                                    {% elif request.GET.role == 'teacher' %}Teacher Portal
+                                    {% elif request.GET.role == 'registrar' %}Registrar Portal
+                                    {% elif request.GET.role == 'finance' %}Finance Portal
+                                    {% endif %}
+                                </div>
+                                {% endif %}
                                 <p class="text-muted">Please login to your account</p>
                             </div>
                             
@@ -69,8 +84,6 @@
                                         </button>
                                     </div>
                                 </div>
-                                
-                                
                                 
                                 <div class="d-grid mb-3">
                                     <button class="btn btn-primary py-2 fw-bold" type="submit">
@@ -211,44 +224,5 @@ $(document).ready(function() {
         }
     });
 });
-</script>
-
-<script>
-    // About Modal Functionality (Works on ALL pages)
-    document.addEventListener('DOMContentLoaded', function() {
-        const aboutBtn = document.getElementById('aboutBtn');
-        const closeModal = document.getElementById('closeModal');
-        const aboutModal = document.getElementById('aboutModal');
-    
-        if (aboutBtn && closeModal && aboutModal) {
-            // Open modal
-            aboutBtn.addEventListener('click', () => {
-                aboutModal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent scrolling
-            });
-    
-            // Close modal (X button)
-            closeModal.addEventListener('click', () => {
-                aboutModal.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-    
-            // Close modal when clicking outside
-            aboutModal.addEventListener('click', (e) => {
-                if (e.target === aboutModal) {
-                    aboutModal.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            });
-    
-            // Close modal with Escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && aboutModal.classList.contains('active')) {
-                    aboutModal.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            });
-        }
-    });
 </script>
 {% endblock %}
