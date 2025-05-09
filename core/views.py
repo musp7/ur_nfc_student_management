@@ -665,11 +665,16 @@ def register_student(request):
         form = StudentRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             student = form.save(commit=False)
-            # Generate NFC URL directly in view
             student.nfc_url = student.generate_nfc_url(request)
             student.save()
             messages.success(request, f'Thank you for registering {student.first_name} {student.last_name}!')
             return redirect('registrar-dashboard')
+        else:
+            # Add form errors to messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    field_label = form.fields[field].label if field in form.fields else field
+                    messages.error(request, f"{field_label}: {error}")
     else:
         form = StudentRegistrationForm()
     

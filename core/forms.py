@@ -6,7 +6,35 @@ from .models import Student, Attendance,Campus, College, School, Department, Cla
 class StudentRegistrationForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = '__all__'  # Include all fields from the Student model
+        fields = '__all__'  # or specify all your fields explicitly
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Safely set required fields only if they exist
+        if 'campus' in self.fields:
+            self.fields['campus'].required = True
+            self.fields['campus'].widget.attrs.update({'class': 'form-select'})
+            
+        # Check if the field is named 'class' or something else
+        class_field_name = 'class' if 'class' in self.fields else 'student_class'
+        if class_field_name in self.fields:
+            self.fields[class_field_name].required = True
+            self.fields[class_field_name].widget.attrs.update({'class': 'form-select'})
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Check campus
+        if 'campus' in self.fields and not cleaned_data.get('campus'):
+            self.add_error('campus', 'Please select a campus')
+            
+        # Check class (using the correct field name)
+        class_field_name = 'class' if 'class' in self.fields else 'student_class'
+        if class_field_name in self.fields and not cleaned_data.get(class_field_name):
+            self.add_error(class_field_name, 'Please select a class')
+        
+        return cleaned_data
 
 class AttendanceFilterForm(forms.Form):
     department = forms.ModelChoiceField(
