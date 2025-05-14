@@ -5,7 +5,7 @@ from multiprocessing import Value
 from django.forms import IntegerField
 from django.utils import timezone
 from django.http import JsonResponse
-from django.db.models import When, Case, Count
+from django.db.models import When, Case, Count, Q
 from django.shortcuts import render, get_object_or_404 , redirect 
 from django.contrib import messages
 
@@ -51,7 +51,8 @@ def student_profile(request, student_id):
     attendance_type = request.GET.get('attendance_type') or request.session.get('attendance_type')
     is_modal = request.GET.get('modal', 'false').lower() == 'true'
     portal_message = None
-    
+    kigali_tz = pytz.timezone('Africa/Kigali')
+
     # Gatekeeper functionality (unchanged)
     if request.user.role == 'gatekeeper':
         last_entry = StudentEntry.objects.filter(
@@ -60,7 +61,8 @@ def student_profile(request, student_id):
         ).order_by('-entry_time').first()
         
         if last_entry:
-            last_entry.exit_time = timezone.now()
+            
+            last_entry.exit_time = timezone.now().astimezone(kigali_tz)
             last_entry.save()
             portal_message = f"{student.first_name} has exited at {last_entry.exit_time.strftime('%H:%M:%S')}"
         else:
@@ -68,7 +70,7 @@ def student_profile(request, student_id):
                 student=student,
                 gatekeeper=request.user
             )
-            portal_message = f"Welcome {student.first_name}! Entry recorded at {timezone.now().strftime('%H:%M:%S')}"
+            portal_message = f"Welcome {student.first_name}! Entry recorded at {timezone.now().astimezone(kigali_tz).strftime('%H:%M:%S')}"
     
     # Teacher attendance tracking (unchanged)
     elif request.user.role == 'teacher' and attendance_type:
@@ -145,16 +147,69 @@ def landing_page(request):
 @login_required
 @role_required(['gatekeeper'])
 def gatekeeper_dashboard(request):
-    from datetime import datetime
+
     
     # Get current time
-    timezone_now = timezone.now()
+    kigali_tz = pytz.timezone('Africa/Kigali')
+    timezone_now = timezone.now().astimezone(kigali_tz)
+    
     
     # Get filter parameters
     date_str = request.GET.get('date', '')
     department_id = request.GET.get('department', '')
     class_id = request.GET.get('class', '')
+    if request.method == 'POST' and 'search_student' in request.POST:
+        student_id = request.POST.get('student_id')
+        try:
+            student = Student.objects.select_related(
+                'department', 'student_class', 'campus'
+            ).get(student_id=student_id)
+            
+            # Check if student is currently in campus
+            last_entry = StudentEntry.objects.filter(
+                student=student,
+                exit_time__isnull=True
+            ).order_by('-entry_time').first()
+            
+            return render(request, 'core/gatekeeper_dashboard.html', {
+                # Your existing context
+                'searched_student': student,
+                'current_status': 'IN' if last_entry else 'OUT',
+                'last_entry_time': last_entry.entry_time if last_entry else None,
+                # Include all your existing context variables
+            })
+            
+        except Student.DoesNotExist:
+            messages.error(request, "Student not found. Please check the ID and try again.")
+        except Exception as e:
+            messages.error(request, f"Error searching student: {str(e)}")
     
+    # Handle manual entry/exit confirmation
+    elif request.method == 'POST' and 'confirm_entry' in request.POST:
+        student_id = request.POST.get('student_id')
+        try:
+            student = Student.objects.get(student_id=student_id)
+            last_entry = StudentEntry.objects.filter(
+                student=student,
+                exit_time__isnull=True
+            ).order_by('-entry_time').first()
+            
+            if last_entry:
+                last_entry.exit_time = timezone_now
+                last_entry.save()
+                messages.success(request, f"{student} exited at {last_entry.exit_time.strftime('%H:%M:%S')}")
+            else:
+                StudentEntry.objects.create(
+                    student=student,
+                    gatekeeper=request.user,
+                    entry_time=timezone_now
+                )
+                messages.success(request, f"{student} entered at {timezone_now.strftime('%H:%M:%S')}")
+            
+            return redirect('gatekeeper-dashboard')
+            
+        except Exception as e:
+            messages.error(request, f"Error processing entry: {str(e)}")
     # Date handling
     try:
         selected_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else timezone_now.date()
@@ -1479,3 +1534,23 @@ def get_system_statistics(request):
         ))
     }
     return JsonResponse(stats)
+
+
+@login_required
+@role_required(['gatekeeper'])
+def student_search_api(request):
+    term = request.GET.get('term', '')
+    students = Student.objects.filter(
+        Q(student_id__icontains=term) |
+        Q(first_name__icontains=term) |
+        Q(last_name__icontains=term)
+    ).values('student_id', 'first_name', 'last_name')[:10]
+    
+    results = []
+    for student in students:
+        results.append({
+            'value': student['student_id'],
+            'label': f"{student['first_name']} {student['last_name']}"
+        })
+    
+    return JsonResponse(results, safe=False)

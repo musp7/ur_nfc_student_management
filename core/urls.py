@@ -36,4 +36,5 @@ urlpatterns = [
     path('finance/report/', views.generate_payment_report, name='generate-payment-report'),
     path('registrar/report/', views.generate_registered_students_report, name='registrar-report'), 
     path('api/statistics/', views.get_system_statistics, name='system-statistics'),  
+    path('api/student-search/', views.student_search_api, name='student-search-api'),
 ]
