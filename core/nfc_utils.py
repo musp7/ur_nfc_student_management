@@ -3,9 +3,7 @@
 import nfc
 
 def scan_nfc_card():
-    """
-    Scans an NFC card and returns the student ID encoded in the card.
-    """
+    
     try:
         clf = nfc.ContactlessFrontend('usb')  # Connect to the NFC reader
         if not clf:

@@ -152,10 +152,7 @@ class Student(models.Model):
         null=True
     )
     def generate_nfc_url(self, request):
-        """
-        Generate the full NFC URL dynamically based on the request's host.
-        Includes the current attendance type if available.
-        """
+        
         scheme = request.scheme  # 'http' or 'https'
         host = request.get_host()  # e.g., '127.0.0.1:8000' or 'example.com'
         base_url = f"{scheme}://{host}{reverse('student-profile', args=[self.student_id])}"
@@ -176,9 +173,7 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.student_id})"
     def get_exam_status(self, teacher):
-        """
-        Returns the exam status for this student with the given teacher.
-        """
+        
         start_record = Attendance.objects.filter(
             student=self,
             teacher=teacher,

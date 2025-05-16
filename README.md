@@ -12,7 +12,7 @@ in tracking student attendance and managing student profiles.
 •	Student Registration:
 •	Register students with detailed information such as campus, college, school, department, class, and NFC card URL.
 •	Dynamic field filtering (e.g., colleges based on campus, schools based on college, etc.).
-•	Student Management:
+•	Student Management
 •	View and manage all registered students.
 •	Filter by campus, college, school, department, and class.
 🛂 Gatekeeper Portal
@@ -22,6 +22,8 @@ in tracking student attendance and managing student profiles.
 •	Gatekeepers can view student profiles but cannot see financial or attendance data.
 •	Access Control:
 •	Only authenticated gatekeepers can use this portal.
+•   Generating report day by day
+•   Manualy entering student id to see his/her information when they lost their id
 🎓 Teacher Portal
 •	Attendance Tracking:
 •	Record attendance for both classes and exams.
@@ -31,6 +33,7 @@ in tracking student attendance and managing student profiles.
 •	View lists of both present and absent students.
 •	Filtering:
 •	Filter students by department and class before taking attendance.
+•   Generating reports
 💰 Finance Portal
 •	Payment Management:
 •	View all students and their payment statuses.
@@ -58,20 +61,22 @@ in tracking student attendance and managing student profiles.
 
 🛠️ Getting Started
 1. Clone the Repository
-git clone <repository-url>
-cd nfc_student_management
+    git clone <repository-url>
+    cd ur_nfc_student_management
 2. Set Up a Virtual Environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-3. Install Dependencies
-pip install -r requirements.txt
-4. Apply Migrations
-python manage.py makemigrations
-python manage.py migrate
-5. Run the Server
-python manage.py runserver
-6. Access the App
-Open your browser and go to http://127.0.0.1:8000/
+    python -m venv venv
+    source venv/bin/activate  # On Windows: venv\Scripts\activate
+3. enter in project directory
+   cd ur_nfc_student_management
+4. Install Dependencies
+   pip install -r requirements.txt
+5. Apply Migrations
+   python manage.py makemigrations
+   python manage.py migrate
+6. Run the Server
+   python manage.py runserver
+7. Access the App
+   Open your browser and go to http://127.0.0.1:8000/
 
 📄 License
 This project is licensed under the MIT License

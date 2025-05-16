@@ -42,9 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',  # For APIs
     'core',
     'accounts',  # Custom user model app
-    #othe apps
-    'django_grip',
-    'django_eventstream',
+    
 ]
 
 MIDDLEWARE = [

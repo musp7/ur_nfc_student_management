@@ -134,9 +134,9 @@ def student_profile(request, student_id):
 
 
 def landing_page(request):
-    """
-    Displays the landing page with links to all portals.
-    """
+   
+    #Displays the landing page with links to all portals.
+    
     return render(request, 'core/landing_page.html')
 
 
@@ -294,18 +294,18 @@ def scan_card(request):
 @login_required
 @role_required(['teacher'])
 def teacher_dashboard(request):
-    """
-    Teacher dashboard view.
-    """
+    
+    #Teacher dashboard view.
+    
     return render(request, 'core/teacher_dashboard.html')
 
 
 @login_required
 @role_required(['registrar'])
 def registrar_dashboard(request):
-    """
-    Registrar dashboard view with options to register a new student and view/filter registered students.
-    """
+    
+    #Registrar dashboard view with options to register a new student and view/filter registered students.
+    
     # Handle student registration
     if request.method == 'POST' and 'register_student' in request.POST:
         registration_form = StudentRegistrationForm(request.POST, request.FILES)
@@ -354,9 +354,9 @@ def registrar_dashboard(request):
 @login_required
 @role_required(['finance'])
 def finance_dashboard(request):
-    """
-    Finance dashboard view with filtering functionality.
-    """
+    
+    #Finance dashboard view with filtering functionality.
+    
     students = Student.objects.all().select_related('department', 'student_class')
     form = FinanceFilterForm(request.GET or None)
 
@@ -391,9 +391,9 @@ def finance_dashboard(request):
 @login_required
 @role_required(['registrar'])
 def registrar_dashboard(request):
-    """
-    Registrar dashboard view with options to register a new student.
-    """
+    
+    #Registrar dashboard view with options to register a new student.
+    
     # Handle student registration
     if request.method == 'POST' and 'register_student' in request.POST:
         registration_form = StudentRegistrationForm(request.POST, request.FILES)
@@ -410,9 +410,9 @@ def registrar_dashboard(request):
 @login_required
 @role_required(['registrar'])
 def view_all_students(request):
-    """
-    View for displaying all registered students.
-    """
+   
+    #View for displaying all registered students.
+    
     students = Student.objects.all()  # Fetch all students from the database
     return render(request, 'core/view_all_students.html', {'students': students})
 
@@ -445,10 +445,10 @@ def load_classes(request):
 @login_required
 @role_required(['teacher'])
 def take_attendance(request):
-    """
-    View for taking attendance with exam time tracking.
-    Generates comprehensive reports including exam status.
-    """
+   
+    #View for taking attendance with exam time tracking.
+    #Generates comprehensive reports including exam status.
+    
     students = None
     attended_students = []
     exam_records = {}
@@ -574,9 +574,9 @@ def take_attendance(request):
 @login_required
 @role_required(['teacher'])
 def scan_nfc(request):
-    """
-    Handle NFC card scanning via AJAX.
-    """
+   
+    #Handle NFC card scanning via AJAX.
+    
     if request.method == 'POST':
         student_id = request.POST.get('student_id')
         attendance_type = request.session.get('attendance_type')
@@ -602,9 +602,9 @@ def scan_nfc(request):
 @login_required
 @role_required(['gatekeeper'])
 def scan_card(request):
-    """
-    View for scanning NFC cards and loading student profiles.
-    """
+   
+    #View for scanning NFC cards and loading student profiles.
+    
     student = None
     error = None
 
@@ -626,9 +626,9 @@ def scan_card(request):
 @login_required
 @role_required(['finance'])
 def finance_dashboard(request):
-    """
-    Finance dashboard view with filtering functionality.
-    """
+    
+    #Finance dashboard view with filtering functionality.
+    
     students = Student.objects.all()  # Fetch all registered students
     form = FinanceFilterForm(request.GET or None)
 
@@ -653,9 +653,9 @@ def finance_dashboard(request):
 @login_required
 @role_required(['finance'])
 def finance_student_detail(request, student_id):
-    """
-    View for finance staff to view and update a student's payment status.
-    """
+   
+    #View for finance staff to view and update a student's payment status.
+    
     student = get_object_or_404(Student, id=student_id)
 
     if request.method == 'POST':
@@ -671,9 +671,9 @@ def finance_student_detail(request, student_id):
 @login_required
 @role_required(['registrar'])
 def registered_students(request):
-    """
-    View to display all registered students with filtering functionality.
-    """
+    
+    #View to display all registered students with filtering functionality.
+    
     students = Student.objects.all()
     filter_form = RegistrarFilterForm(request.GET or None)
 
@@ -738,9 +738,9 @@ def register_student(request):
 @login_required
 @role_required(['registrar'])
 def edit_student(request, student_id):
-    """
-    View to edit a single student's details.
-    """
+    
+    #View to edit a single student's details.
+    
     student = get_object_or_404(Student, id=student_id)
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST, request.FILES, instance=student)
@@ -757,9 +757,9 @@ def edit_student(request, student_id):
 @login_required
 @role_required(['registrar'])
 def edit_students(request):
-    """
-    View to bulk edit students' class.
-    """
+    
+    #View to bulk edit students' class.
+    
     student_ids = request.GET.get('ids', '').split(',')
     students = Student.objects.filter(id__in=student_ids)
 
@@ -787,9 +787,9 @@ def edit_students(request):
 @login_required
 @role_required(['registrar'])
 def delete_students(request):
-    """
-    View to delete selected students.
-    """
+    
+    #View to delete selected students.
+    
     if request.method == 'POST':
         student_ids = request.POST.getlist('selected_students')
         Student.objects.filter(id__in=student_ids).delete()
@@ -808,9 +808,9 @@ def get_classes_by_department(request):
 @login_required
 @role_required(['teacher'])
 def reset_attendance(request):
-    """
-    View to reset attendance data for the current teacher's session
-    """
+    
+    #View to reset attendance data for the current teacher's session
+    
     attendance_type = request.session.get('attendance_type')
     
     if attendance_type:
@@ -831,9 +831,9 @@ def reset_attendance(request):
     return redirect('take-attendance')
 
 def generate_attendance_report(filtered_students, attended_students, request=None, attendance_type=None, exam_records=None):
-    """
-    Generate attendance PDF report with consistent styling and proper background coverage
-    """
+    
+    #Generate attendance PDF report with consistent styling and proper background coverage
+    
     # Get metadata
     teacher_name = "System Generated"
     if request and hasattr(request, 'user'):
@@ -1001,7 +1001,7 @@ def generate_attendance_report(filtered_students, attended_students, request=Non
 @login_required
 @role_required(['finance'])
 def generate_payment_report(request):
-    """Generate payment PDF report with consistent styling and proper backgrounds"""
+    #Generate payment PDF report with consistent styling and proper backgrounds
     # Get filters and data
     payment_status = request.GET.get('payment_status', '')
     department_id = request.GET.get('department', '')
@@ -1170,7 +1170,7 @@ def generate_payment_report(request):
 @login_required
 @role_required(['registrar'])
 def generate_registered_students_report(request):
-    """Generate registered students PDF with proper background coverage"""
+    #Generate registered students PDF with proper background coverage
     # Get filters
     campus_id = request.GET.get('campus')
     college_id = request.GET.get('college')
@@ -1338,9 +1338,9 @@ def generate_registered_students_report(request):
 @login_required
 @role_required(['gatekeeper'])
 def export_entries(request):
-    """
-    Generate student entries/exits PDF report with consistent styling
-    """
+    
+    #Generate student entries/exits PDF report with consistent styling
+    
     # Get filter parameters
     date_str = request.GET.get('date', '')
     department_id = request.GET.get('department', '')

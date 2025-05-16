@@ -1,13 +1,13 @@
 # filepath: accounts/decorators.py
-# filepath: accounts/decorators.py
+
 
 from django.http import HttpResponseForbidden
 
 def role_required(allowed_roles):
-    """
-    A decorator to restrict access to views based on the user's role.
-    Allows access to users whose role is in the allowed_roles list.
-    """
+    
+    #A decorator to restrict access to views based on the user's role.
+    #Allows access to users whose role is in the allowed_roles list.
+    
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
             if not request.user.is_authenticated:

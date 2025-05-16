@@ -3,10 +3,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 
 class CustomLoginView(LoginView):
-    """
-    Custom login view that validates the user's role and redirects them
-    to their respective dashboard after login.
-    """
+   
     def form_valid(self, form):
         # Authenticate the user
         user = form.get_user()
